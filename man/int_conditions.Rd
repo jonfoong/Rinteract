@@ -4,18 +4,12 @@
 \alias{int_conditions}
 \title{int_conditions}
 \usage{
-int_conditions(
-  mod,
-  main_vars = NULL,
-  demean = FALSE,
-  data = NULL,
-  names = NULL
-)
+int_conditions(mod, main_vars = NULL, demean = TRUE, data = NULL, names = NULL)
 }
 \arguments{
 \item{mod}{A model object}
 
-\item{main_vars}{A vector of variable names in the interaction of interest}
+\item{main_vars}{A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction}
 
 \item{demean}{Should the function also return mean conditions?}
 
@@ -34,6 +28,6 @@ set.seed(1)
 dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE))
 dat <- dat \%>\% mutate(Y = X1 + 2*X2 + 3*X1*X2)
 mod <- lm(Y~X1*X2, dat)
-cond_tab <- int_conditions(mod, main_vars = c("X1", "X2"), demean = TRUE, data = dat, names = c(A1 = "X1", A2 = "X2"))
+cond_tab <- int_conditions(mod, main_vars = c("X1", "X2"), data = dat, names = c(A1 = "X1", A2 = "X2"))
 
 }

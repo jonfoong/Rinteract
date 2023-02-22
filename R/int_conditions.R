@@ -4,7 +4,7 @@
 #' @description Conducts hypothesis testing across all conditions of interaction effects of a fitted model
 #'
 #' @param mod A model object
-#' @param main_vars A vector of variable names in the interaction of interest
+#' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
 #' @param demean Should the function also return mean conditions?
 #' @param data Dataset used when fitting model
 #' @param names A named vector for renaming variables
@@ -15,7 +15,7 @@
 #' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE))
 #' dat <- dat %>% mutate(Y = X1 + 2*X2 + 3*X1*X2)
 #' mod <- lm(Y~X1*X2, dat)
-#' cond_tab <- int_conditions(mod, main_vars = c("X1", "X2"), demean = TRUE, data = dat, names = c(A1 = "X1", A2 = "X2"))
+#' cond_tab <- int_conditions(mod, main_vars = c("X1", "X2"), data = dat, names = c(A1 = "X1", A2 = "X2"))
 #'
 #' @export
 #' @importFrom dplyr %>% select mutate rowwise across if_all select_if bind_rows rename_with
@@ -26,10 +26,10 @@
 
 
 int_conditions <- function(mod,
-                      main_vars = NULL,
-                      demean = FALSE, # if TRUE, returns all demeaned effects
-                      data = NULL,
-                      names = NULL # takes a named vector; if specified, renames variables of model
+                           main_vars = NULL,
+                           demean = TRUE, # if TRUE, returns all demeaned effects
+                           data = NULL,
+                           names = NULL # takes a named vector; if specified, renames variables of model
 ){
 
   # extract all vars from model
@@ -37,21 +37,47 @@ int_conditions <- function(mod,
   all_vars <-
     attributes(mod$terms)$term.labels
 
+  # if main_vars not specified, extracts highest order interaction
+
+  if(is.null(main_vars)){
+
+    full_term <-
+      all_vars[sapply(all_vars,
+                      function(x){
+
+                        len <-
+                          strsplit(x, ":") %>%
+                          unlist() %>%
+                          length()
+
+                      }) %>%
+                 which.max()]
+
+    main_vars <-
+      full_term %>%
+      strsplit(":") %>%
+      unlist()
+
+  } else {
+
+    # extract the full x-way interaction term which we use later
+
+    full_term <-
+      vars[vars %>%
+             sapply(function(x) all(main_vars %in% (strsplit(x, ":") %>% unlist())))]
+
+  }
+
+  # how many terms?
+
+  interacts <- length(main_vars)
+
   # exclude those we are not conditioning on
 
   vars <-
     all_vars[all_vars %>%
                sapply(function(x) all((strsplit(x, ":") %>% unlist()) %in% main_vars))]
 
-  # how many terms?
-
-  interacts <- length(main_vars)
-
-  # extract the full x-way interaction term which we use later
-
-  full_term <-
-    vars[vars %>%
-           sapply(function(x) all(main_vars %in% (strsplit(x, ":") %>% unlist())))]
 
   # get each interaction effect and the conditions they are marginal to
 
