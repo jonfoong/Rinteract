@@ -1,0 +1,119 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+```{r}
+#| fig.height: 2
+#| fig.width: 2
+
+library(gridExtra)
+library(grid)
+library(ggplot2)
+library(gtable)
+library(dplyr)
+library(Rinteract)
+library(DeclareDesign)
+
+# first get dataset
+
+data <- fabricate(N = 1000,
+                  X1 = complete_ra(N),
+                  X2 = complete_ra(N),
+                  X3 = complete_ra(N),
+                  X4 = complete_ra(N),
+                  Y = X1 + 2*X2 - X3 +2*X4 + X1*X2*X3*X4 + rnorm(N))
+
+mod <- lm(Y~X1*X2*X3*X4, data)
+
+
+conds <- int_conditions(mod, data=data)
+
+alphabets <- c(rep("A\n(xx)", 3), rep("B\n(xx)", 3), rep("C\n(xx)",3))
+numbers <- c(rep(c(1,2,3), 3))
+sounds <- c('Ayes','Bees','Cees')
+
+df <- data.frame(alphabets = alphabets,numbers=numbers) %>% 
+  mutate(sounds = rep(sounds, each = 3), .before = 1)
+
+df <- df %>% 
+  as.matrix()
+
+colnames(df) <- c("", "alphabets", "numbers")
+
+# df[2,1] <- "test"
+
+halign <- tableGrob(df, theme = ttheme_default())
+
+halign$layout <- 
+  halign$layout %>% 
+  mutate(t = ifelse(t %in% 2:4 & l==1, 2, t),
+         b = ifelse(b %in% 2:4 & l==1, 4, b))
+
+halign$layout <- 
+  halign$heights %>% 
+  sapply(function(x) gsub("4mm", "1mm", x))
+
+
+
+test <- function(x){
+  dev.off()
+  dev.new()
+  
+  plot(halign);recordPlot()
+}
+
+
+p <- as.ggplot(halign)
+
+
+ggsave("test.png", p, width = 5, height = 8, units = "in")
+
+rasterImage(readPNG("test.png"))
+
+obj
+# halign$layout <- 
+#   halign$layout[halign$layout$t != 1 &
+#                   halign$layout$l == 1, ] %>% 
+#   mutate(b = ifelse(t %in% 2:4, 4, b))
+
+print(p)
+
+```
+
+```{r}
+#| fig.height: 1
+#| fig.width: 1
+
+knitr::include_graphics('test.png')
+
+```
+
+
+
+```{r}
+
+library(ggplot2)
+library(gtable)
+
+# Create a plot
+p <- ggplot(mtcars, aes(x = mpg, y = wt)) + geom_point()
+
+# Get the plot gtable
+g <- ggplotGrob(p)
+
+# Add three cells with different z values
+g <- gtable_add_cols(g, unit(1, "in"), 0)
+g <- gtable_add_rows(g, unit(1, "in"), 0)
+g <- gtable_add_grob(g, rectGrob(), t = 2, l = 2, b = 4, r = 4, z = 2, name = "cell2")
+g <- gtable_add_grob(g, rectGrob(), t = 3, l = 3, b = 5, r = 5, z = 1, name = "cell1")
+g <- gtable_add_grob(g, rectGrob(), t = 1, l = 1, b = 3, r = 3, z = 3, name = "cell3")
+
+# Plot the gtable
+grid::grid.newpage()
+grid::grid.draw(g)
+
+
+
+```

@@ -23,6 +23,8 @@
 #' @importFrom tidyselect all_of everything
 #' @importFrom stringr str_replace_all
 #' @importFrom multcomp glht
+#' @importFrom rlang is_empty
+#' @importFrom broom tidy
 
 
 int_conditions <- function(mod,
