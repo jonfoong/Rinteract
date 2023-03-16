@@ -65,8 +65,7 @@ int_conditions <- function(mod,
     # extract the full x-way interaction term which we use later
 
     full_term <-
-      vars[vars %>%
-             sapply(function(x) all(main_vars %in% (strsplit(x, ":") %>% unlist())))]
+      paste(main_vars, collapse = ":")
 
   }
 
