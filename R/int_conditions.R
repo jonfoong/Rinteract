@@ -4,21 +4,21 @@
 #' @description Conducts hypothesis testing across all conditions of interaction effects of a fitted model
 #'
 #' @param mod A model object
-#' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
-#' @param demean Should the function also return mean conditions?
 #' @param data Dataset used when fitting model
+#' @param demean Should the function also return mean conditions?
+#' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
 #' @param names A named vector for renaming variables
 #'
 #' @return A data frame object that contains all effects, respective conditions, and estimated hypotheses
 #' @examples
 #' set.seed(1)
 #' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE))
-#' dat <- dat %>% mutate(Y = X1 + 2*X2 + 3*X1*X2)
+#' dat <- dat |> mutate(Y = X1 + 2*X2 + 3*X1*X2 + rnorm(1))
 #' mod <- lm(Y~X1*X2, dat)
-#' cond_tab <- int_conditions(mod, main_vars = c("X1", "X2"), data = dat, names = c(A1 = "X1", A2 = "X2"))
+#' cond_tab <- int_conditions(mod, data = dat, main_vars = c("X1", "X2"), names = c(A1 = "X1", A2 = "X2"))
 #'
 #' @export
-#' @importFrom dplyr %>% select mutate rowwise across if_all select_if bind_rows rename_with
+#' @importFrom dplyr %>% select mutate rowwise across if_all select_if bind_rows rename_with cur_column
 #' @importFrom tidyr separate
 #' @importFrom tidyselect all_of everything
 #' @importFrom stringr str_replace_all
@@ -28,9 +28,10 @@
 
 
 int_conditions <- function(mod,
-                           main_vars = NULL,
-                           demean = TRUE, # if TRUE, returns all demeaned effects
                            data = NULL,
+                           demean = TRUE, # if TRUE, returns all demeaned effects
+                           conmeans = TRUE, # if TRUE, returns all conditional means
+                           main_vars = NULL,
                            names = NULL # takes a named vector; if specified, renames variables of model
 ){
 
@@ -165,6 +166,7 @@ int_conditions <- function(mod,
              grid <-
                matrix(1, 1, length(main_terms)) %>%
                as.data.frame()
+
              colnames(grid) <- main_terms
 
 
@@ -243,7 +245,7 @@ int_conditions <- function(mod,
                               select(!matches(sprintf("t_\\d|form|%s", dat$term))) %>%
                               mutate(across(everything(),
                                             function(x) paste0(cur_column(), " = ",
-                                                               ifelse(!x %in% 0:1, "'mean'", x)))) %>%
+                                                               ifelse(!x %in% 0:1, "'all'", x)))) %>%
                               unlist(),
                             dat$term %>% strsplit(":") %>% unlist() %>% paste0(" = 1")
                           ) %>%
@@ -293,6 +295,56 @@ int_conditions <- function(mod,
 
   }
 
-  cond_effs
+  # rename var columns
+
+  cond_effs <-
+    cond_effs %>%
+    mutate(across(c(X1, X2), function(x) ifelse(effect==cur_column(), "effect", x))) %>%
+    select(-effect)
+
+  # generate conditional means from predictions
+
+  if(conmeans){
+
+    # first get all permutations
+
+    all_p <-
+      lapply(main_vars, function(x) c(0, 1, "all"))
+
+    all_p <-
+      do.call(expand.grid, all_p)
+
+    colnames(all_p) <- main_vars
+
+    df_p <-
+      all_p %>%
+      mutate(across(everything(),
+                    function(x){
+
+                      case_when(x=="all"~mean(df[[cur_column()]], na.rm=TRUE),
+                                x==1~1,
+                                x==0~0)
+                    }))
+
+    df_p <-
+      predict(mod, df_p, se.fit = TRUE) %>%
+      do.call(cbind, .) %>%
+      .[,c("fit", "se.fit")] %>%
+      as.data.frame()
+
+    colnames(df_p) <- c("estimate", "std.error")
+
+    df_p$p.value <- NA
+
+    df_p <-
+      cbind(all_p, df_p)
+
+    cond_effs %>%
+      rbind(df_p) %>%
+      mutate(value = if_any(all_of(main_vars),  ~. == "effect"),
+             value = ifelse(value, "Causal effect", "Level"))
+
+  } else cond_effs
+
 
 }

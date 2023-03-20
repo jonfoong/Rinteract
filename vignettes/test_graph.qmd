@@ -1,0 +1,135 @@
+---
+title: "Means and effects"
+date: "2023-03-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(DeclareDesign)
+library(Rinteract)
+library(tidyverse)
+library(ggh4x)
+
+```
+
+
+```{r}
+
+
+df <- fabricate(2000,
+                X1 = complete_ra(N),
+                X2 = complete_ra(N),
+                X3 = complete_ra(N),
+                X4 = complete_ra(N),
+                Y = X1 + X3 + X1*X2*X3*X4 + rnorm(N))
+
+```
+
+```{r}
+
+
+# Conditional means
+
+conditional_means <- function(df, Y, main_vars){
+  
+  # Get set of conditions
+  calls <- lapply(main_vars, function(x) c(0:1, "mean"))
+  calls <- do.call(expand.grid, calls) 
+  names(calls) <- main_vars
+  
+  # Generate logical statements
+  eqs <- lapply(main_vars, function(x) c(paste(x, "==", 0:1), TRUE))
+  eqs <- do.call(expand.grid, eqs) |> 
+    apply(1, function(r) paste(r, collapse = " & "))
+  
+  eqs
+  
+  # Calculate means
+  stats <- 
+    lapply(eqs, function(eq) {
+      text <- 
+        paste0("df |> filter(", eq, ") |> summarize(estimate = mean(", Y, "), std.error = sd(", Y, "/(n()^.5)))")
+      
+      eval(parse(text = text))
+    }) |> bind_rows()
+  
+  # Combine  
+  bind_cols(calls, stats)
+  
+}
+
+```
+
+```{r}
+# Fit a regression model with interactions
+
+# This function cleans output and adds conditional means
+int_conditions_wrapper <- function(model, main_vars, data, Y) {
+  
+  cond_tab <- int_conditions(model, main_vars = main_vars, data = df)
+
+  cond_tab |> 
+    dplyr::select(all_of(main_vars), estimate, std.error) |>
+    bind_rows(conditional_means(df, Y, main_vars))
+  
+}
+
+
+
+
+
+```
+
+# Plot 2 * 2
+
+```{r, fig.width = 6, fig.height = 3}
+
+model <- lm(Y ~ X1 * X2, data = df)
+
+main_vars = c("X1", "X2")
+
+x <-
+  int_conditions_wrapper(model, main_vars, df, "Y")  |>
+  mutate(label = paste0(round(estimate, 2), "\n(", round(std.error, 2), ")"),
+         x = 1, y = 1) |>
+  # The next line has some silly syntax
+  mutate(value = if_any(all_of(main_vars),  ~. == "effect"),
+         value = ifelse(value, "Causal effect", "Level")) 
+
+x |>
+  ggplot(aes(x, y, label = label, color = value)) + 
+  facet_nested(X1  ~ X2, labeller = label_both, switch="y") + 
+  geom_text() +  
+  theme_void() + 
+  theme(legend.position = "none")
+
+
+```
+
+# Plot $2^4$
+
+```{r, fig.width = 12, fig.height = 8}
+model <- lm(Y ~ X1 * X2 *X3 *X4, data = df)
+
+main_vars = c("X1", "X2", "X3", "X4")
+
+x <-
+  int_conditions_wrapper(model, main_vars, df, "Y")  |>
+  mutate(label = paste0(round(estimate, 2), "\n(", round(std.error, 2), ")"),
+         x = 1, y = 1) |>
+  # The next line has some silly syntax
+  mutate(value = if_any(all_of(main_vars),  ~. == "effect"),
+         value = ifelse(value, "Causal effect", "Level")) 
+
+x |>
+  ggplot(aes(x, y, label = label, color = value)) + 
+  facet_nested(X1 + X2 ~ X3 + X4, labeller = label_both, switch="y") + 
+  geom_text() +  
+  theme_void() + 
+  theme(legend.position = "none")
+
+
+
+
+```
