@@ -299,7 +299,7 @@ int_conditions <- function(mod,
 
   cond_effs <-
     cond_effs %>%
-    mutate(across(c(X1, X2), function(x) ifelse(effect==cur_column(), "effect", x))) %>%
+    mutate(across(c(X1, X2), function(x) ifelse(grepl(cur_column(), effect), "effect", x))) %>%
     select(-effect)
 
   # generate conditional means from predictions

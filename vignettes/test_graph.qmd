@@ -87,15 +87,10 @@ int_conditions_wrapper <- function(model, main_vars, data, Y) {
 
 model <- lm(Y ~ X1 * X2, data = df)
 
-main_vars = c("X1", "X2")
-
 x <-
-  int_conditions_wrapper(model, main_vars, df, "Y")  |>
+  int_conditions(model, df) %>% 
   mutate(label = paste0(round(estimate, 2), "\n(", round(std.error, 2), ")"),
-         x = 1, y = 1) |>
-  # The next line has some silly syntax
-  mutate(value = if_any(all_of(main_vars),  ~. == "effect"),
-         value = ifelse(value, "Causal effect", "Level")) 
+         x = 1, y = 1) 
 
 x |>
   ggplot(aes(x, y, label = label, color = value)) + 
@@ -112,15 +107,10 @@ x |>
 ```{r, fig.width = 12, fig.height = 8}
 model <- lm(Y ~ X1 * X2 *X3 *X4, data = df)
 
-main_vars = c("X1", "X2", "X3", "X4")
-
 x <-
-  int_conditions_wrapper(model, main_vars, df, "Y")  |>
+  int_conditions(model, df) %>% 
   mutate(label = paste0(round(estimate, 2), "\n(", round(std.error, 2), ")"),
-         x = 1, y = 1) |>
-  # The next line has some silly syntax
-  mutate(value = if_any(all_of(main_vars),  ~. == "effect"),
-         value = ifelse(value, "Causal effect", "Level")) 
+         x = 1, y = 1) 
 
 x |>
   ggplot(aes(x, y, label = label, color = value)) + 
