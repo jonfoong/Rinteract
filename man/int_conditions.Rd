@@ -2,7 +2,7 @@
 % Please edit documentation in R/int_conditions.R
 \name{int_conditions}
 \alias{int_conditions}
-\title{int_conditions}
+\title{Generate conditional means and effects from a model with interactions}
 \usage{
 int_conditions(
   mod,

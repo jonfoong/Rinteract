@@ -15,8 +15,6 @@ library(ggh4x)
 
 
 ```{r}
-
-
 df <- fabricate(2000,
                 X1 = complete_ra(N),
                 X2 = complete_ra(N),
@@ -26,100 +24,164 @@ df <- fabricate(2000,
 
 ```
 
+Write function
+
 ```{r}
+#| fig.height: 14
+#| fig.width: 14
 
-
-# Conditional means
-
-conditional_means <- function(df, Y, main_vars){
-  
-  # Get set of conditions
-  calls <- lapply(main_vars, function(x) c(0:1, "mean"))
-  calls <- do.call(expand.grid, calls) 
-  names(calls) <- main_vars
-  
-  # Generate logical statements
-  eqs <- lapply(main_vars, function(x) c(paste(x, "==", 0:1), TRUE))
-  eqs <- do.call(expand.grid, eqs) |> 
-    apply(1, function(r) paste(r, collapse = " & "))
-  
-  eqs
-  
-  # Calculate means
-  stats <- 
-    lapply(eqs, function(eq) {
-      text <- 
-        paste0("df |> filter(", eq, ") |> summarize(estimate = mean(", Y, "), std.error = sd(", Y, "/(n()^.5)))")
+int_graph <- 
+  function(data, # a data frame of the form returned by Rinteract::int_conditions
+           facet = NULL, # no default, must be supplied
+           digits = 3, # number of digits to display after decimal point
+           width = 10, # width for wrapping
+           col_level = "gray95",
+           col_effect = c("0" = "dodgerblue", # must be named vector
+                          "1" = "chartreuse", 
+                          "all" ="tomato", 
+                          "effect" = "gold"),
+           alpha = c(1, 0.5, 1, 0.5), # when plotting a 4way interaction, what is the alpha value for each facet row? 
+           col_label = "wheat"
+  ){
+    
+    if(is.null(facet)) stop("facet argument cannot be empty!")
+    
+    data <-
+      data %>% 
+      mutate(label = paste0(round(estimate, digits), "\n(", round(std.error, digits), ")"),
+             x = 1, y = 1) 
+    
+    p <- 
+      data |>
+      ggplot(aes(x, y, label = label)) + 
+      facet_nested(facet, 
+                   labeller = label_wrap_gen_both(width), 
+                   switch="y") + 
+      theme_void() +
+      theme(legend.position = "none",
+            strip.background = element_rect(fill=col_label, colour = "white", 
+                                            linewidth = 0.8, 
+                                            linetype = 1),
+            strip.text = element_text(colour = "black", size = rel(1),
+                                      margin = margin(5, 5, 5, 5))
+      )
+    
+    # get number of variables
+    
+    facet_char <- setdiff(as.character(facet), "~")
+    
+    lhs <- trimws(unlist(strsplit(facet_char[1], "\\+")))[1]
+    rhs <- trimws(unlist(strsplit(facet_char[2], "\\+")))[1]
+    
+    vars <- 
+      trimws(unlist(strsplit(facet_char, "\\+")))
+    
+    if(length(vars)==2){
       
-      eval(parse(text = text))
-    }) |> bind_rows()
-  
-  # Combine  
-  bind_cols(calls, stats)
-  
-}
+      p <- 
+        p +
+        geom_rect(aes(fill = value), xmin = -Inf, xmax = Inf,
+                  ymin = -Inf, ymax = Inf, alpha = 1) +
+        scale_fill_manual(values = c("Level" = "gray95", "Causal effect" = "cadetblue1"))
+      
+    } else if(length(vars)==3){
+      
+      # which variable to set effect colours
+      
+      eff_var <- 
+        c(lhs, rhs)[grepl("\\+", facet_char)]
+      
+      p <- 
+        p +
+        geom_rect(aes(fill = eval(parse(text = eff_var))), xmin = -Inf, xmax = Inf,
+                  ymin = -Inf, ymax = Inf, alpha = 1) +
+        geom_rect(data = subset(data, value=="Level"), fill = col_level, xmin = -Inf, xmax = Inf,
+                  ymin = -Inf, ymax = Inf) +
+        scale_fill_manual(values=col_effect) 
+      
+      
+    } else if(length(vars)==4){
+      
+      loop_df <- 
+        data.frame(vals = names(col_effect), alpha = alpha)
+      
+      for (i in 1:4){
+        
+        p <- 
+          p + 
+          geom_rect(data = subset(data, eval(parse(text = lhs[1]))==loop_df$vals[i] & value!="Level"), 
+                    aes(fill = eval(parse(text = rhs[1]))), 
+                    xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = loop_df$alpha[i])
+        
+      }
+      
+      p <- 
+        p + 
+        scale_fill_manual(values=col_effect) +
+        geom_rect(data = subset(data, value=="Level"), fill = col_level, xmin = -Inf, xmax = Inf,
+                  ymin = -Inf, ymax = Inf)
+      
+    }
+    
+    p +
+      geom_text()
+    
+  }
+
 
 ```
+
+Test function
+
+2-way interaction
 
 ```{r}
-# Fit a regression model with interactions
-
-# This function cleans output and adds conditional means
-int_conditions_wrapper <- function(model, main_vars, data, Y) {
-  
-  cond_tab <- int_conditions(model, main_vars = main_vars, data = df)
-
-  cond_tab |> 
-    dplyr::select(all_of(main_vars), estimate, std.error) |>
-    bind_rows(conditional_means(df, Y, main_vars))
-  
-}
-
-
-```
-
-# Plot 2 * 2
-
-```{r, fig.width = 6, fig.height = 3}
+#| fig.height: 3
+#| fig.width: 7
 
 model <- lm(Y ~ X1 * X2, data = df)
 
-x <-
-  int_conditions(model, df) %>% 
-  mutate(label = paste0(round(estimate, 2), "\n(", round(std.error, 2), ")"),
-         x = 1, y = 1) 
+data <-
+  int_conditions(model, df)
 
-x |>
-  ggplot(aes(x, y, label = label, color = value)) + 
-  facet_nested(X1  ~ X2, labeller = label_both, switch="y") + 
-  geom_text() +  
-  theme_void() +
-  theme(legend.position = "none") 
-
+int_graph(data, facet = X1~X2) +
+  ggtitle("test")
 
 
 ```
 
-# Plot $2^4$
 
-```{r, fig.width = 12, fig.height = 8}
+3-way interaction
 
-model <- lm(Y ~ X1 * X2 *X3 *X4, data = df)
+```{r}
+#| fig.height: 7
+#| fig.width: 14
 
-x <-
-  int_conditions(model, df) %>% 
-  mutate(label = paste0(round(estimate, 2), "\n(", round(std.error, 2), ")"),
-         x = 1, y = 1) 
+model <- lm(Y ~ X1 * X2 * X3, data = df)
 
-x |>
-  ggplot(aes(x, y, label = label, color = value)) + 
-  facet_nested(X1 + X2 ~ X3 + X4, labeller = label_both, switch="y") + 
-  geom_text() +  
-  theme_void() +
-  theme(legend.position = "none")
+data <-
+  int_conditions(model, df)
+
+int_graph(data, facet = X1~X2+X3) +
+  ggtitle("3way interaction")
 
 
+```
 
+
+4-way interaction
+
+```{r}
+#| fig.height: 14
+#| fig.width: 14
+
+model <- lm(Y ~ X1 * X2 * X3 * X4, data = df)
+
+data <-
+  int_conditions(model, df)
+
+int_graph(data, facet = X1+X2~X3+X4) +
+  ggtitle("4way interaction")
 
 
 ```

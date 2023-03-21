@@ -1,4 +1,4 @@
-#' @title int_conditions
+#' @title Generate conditional means and effects from a model with interactions
 #'
 #'
 #' @description Conducts hypothesis testing across all conditions of interaction effects of a fitted model
