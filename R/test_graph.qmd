@@ -1,7 +1,7 @@
 ---
 title: "Untitled"
 format: html
-editor: visual
+editor: source
 ---
 
 ```{r}
@@ -425,8 +425,6 @@ print(p)
 knitr::include_graphics('test.png')
 
 ```
-
-
 
 ```{r}
 
