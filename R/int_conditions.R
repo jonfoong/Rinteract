@@ -8,6 +8,7 @@
 #' @param demean Should the function also return mean conditions?
 #' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
 #' @param names A named vector for renaming variables
+#' @param pred_vars int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. Defaults to 0 for all non-interaction variables.
 #'
 #' @return A data frame object that contains all effects, respective conditions, and estimated hypotheses
 #' @examples
@@ -32,7 +33,8 @@ int_conditions <- function(mod,
                            demean = TRUE, # if TRUE, returns all demeaned effects
                            conmeans = TRUE, # if TRUE, returns all conditional means
                            main_vars = NULL,
-                           names = NULL # takes a named vector; if specified, renames variables of model
+                           names = NULL, # takes a named vector; if specified, renames variables of model
+                           pred_vars = NULL
 ){
 
   # extract all vars from model
@@ -325,6 +327,25 @@ int_conditions <- function(mod,
                                 x==1~1,
                                 x==0~0)
                     }))
+
+    # attach unaccounted for variables for prediction
+
+    extra_vars <- setdiff(all_vars, unique(df$marginal))
+
+    if(length(extra_vars)>0 & is.null(pred_vars)){
+
+      pred_vars <-
+        as.data.frame(matrix(0, 1, length(pred_vars)))
+
+    }
+
+    if(length(extra_vars)>0){
+
+      df_p <-
+        cbind(df_p,
+              pred_vars[rep(1, nrow(df_p)),])
+
+    }
 
     df_p <-
       predict(mod, df_p, se.fit = TRUE) %>%

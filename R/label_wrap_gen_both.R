@@ -6,6 +6,7 @@
 #' @param width Maximum number of characters before wrapping the strip.
 #' @param multi_line Whether to display the labels of multiple factors on separate lines.
 #' @param sep String separating variables and values.
+#' @importFrom ggplot2 label_value
 
 
 label_wrap_gen_both <- function(width = 10, multi_line = TRUE, sep = ": ") {
