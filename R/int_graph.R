@@ -50,7 +50,9 @@ int_graph <-
     data <-
       data %>%
       mutate(label = paste0(round(estimate, digits), "\n(", round(std.error, digits), ")"),
-             x = 1, y = 1)
+             x = 1, y = 1) %>%
+      mutate(sign = ifelse(estimate>0, "pos", "neg"),
+             sig = ifelse(p.value<.05, TRUE, FALSE))
 
     p <-
       data |>
@@ -125,6 +127,8 @@ int_graph <-
     }
 
     p +
-      geom_text()
+      geom_text(aes(color = sign,
+                    fontface = ifelse(sig, 2, 1))) +
+      scale_color_manual(values = c("pos" = "black", "neg" = "red"))
 
   }
