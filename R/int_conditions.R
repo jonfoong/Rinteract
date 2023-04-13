@@ -9,6 +9,7 @@
 #' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
 #' @param names A named vector for renaming variables
 #' @param pred_vars int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. Defaults to 0 for all non-interaction variables.
+#' @param fixef Are there fixed effects within the model? If so these must be supplied in order for predictions to be generated. The argument takes a list of named factors and generates predictions across the mean of all combinations of fixed effects.
 #'
 #' @return A data frame object that contains all effects, respective conditions, and estimated hypotheses
 #' @examples
@@ -34,7 +35,8 @@ int_conditions <- function(mod,
                            conmeans = TRUE, # if TRUE, returns all conditional means
                            main_vars = NULL,
                            names = NULL, # takes a named vector; if specified, renames variables of model
-                           pred_vars = NULL
+                           pred_vars = NULL,
+                           fixef = NULL # takes a list of named factors of fixed effects and their levels
 ){
 
   # extract all vars from model
@@ -236,7 +238,7 @@ int_conditions <- function(mod,
                         test <-
                           glht(mod, dat_hyp$form) %>%
                           tidy() %>%
-                          select(estimate, std.error, `p.value`=adj.p.value)
+                          dplyr::select(estimate, std.error, `p.value`=adj.p.value)
 
                         # extract all conditions
 
@@ -244,7 +246,7 @@ int_conditions <- function(mod,
 
                         con_mean <-
                           c(dat_hyp %>%
-                              select(!matches(sprintf("t_\\d|form|%s", dat$term))) %>%
+                              dplyr::select(!matches(sprintf("t_\\d|form|%s", dat$term))) %>%
                               mutate(across(everything(),
                                             function(x) paste0(cur_column(), " = ",
                                                                ifelse(!x %in% 0:1, "'all'", x)))) %>%
@@ -302,7 +304,7 @@ int_conditions <- function(mod,
   cond_effs <-
     cond_effs %>%
     mutate(across(all_of(main_vars), function(x) ifelse(grepl(cur_column(), effect), "effect", x))) %>%
-    select(-effect)
+    dplyr::select(-effect)
 
   # generate conditional means from predictions
 
@@ -335,7 +337,9 @@ int_conditions <- function(mod,
     if(length(extra_vars)>0 & is.null(pred_vars)){
 
       pred_vars <-
-        as.data.frame(matrix(0, 1, length(pred_vars)))
+        as.data.frame(matrix(0, 1, length(extra_vars)))
+
+      colnames(pred_vars) <- extra_vars
 
     }
 
@@ -347,15 +351,42 @@ int_conditions <- function(mod,
 
     }
 
+    # are there fixed effects? If yes and not specified take average across all fixef levels
+
+    if(!is.null(fixef)){
+
+      # convert into dataframe and factor
+
+      fixef <- expand.grid(fixef)
+
+      preds<-
+        lapply(1:nrow(fixef),
+               function(x){
+
+                 fixef_df <-
+                   fixef[x,] %>%
+                   as.data.frame()
+
+                 names(fixef_df) <- names(fixef)
+
+                 predict(mod, df_p %>%
+                           cbind(fixef_df))
+               }) %>%
+
+        do.call(rbind, .) %>%
+        apply(2, mean)
+
+    } else {
+
+      preds <-
+        predict(mod, df_p)
+
+    }
+
     df_p <-
-      predict(mod, df_p, se.fit = TRUE) %>%
-      do.call(cbind, .) %>%
-      .[,c("fit", "se.fit")] %>%
-      as.data.frame()
-
-    colnames(df_p) <- c("estimate", "std.error")
-
-    df_p$p.value <- NA
+      data.frame(estimate = preds,
+                 std.error = NA,
+                 p.value = NA)
 
     df_p <-
       cbind(all_p, df_p)

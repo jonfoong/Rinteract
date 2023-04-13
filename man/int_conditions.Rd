@@ -11,7 +11,8 @@ int_conditions(
   conmeans = TRUE,
   main_vars = NULL,
   names = NULL,
-  pred_vars = NULL
+  pred_vars = NULL,
+  fixef = NULL
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ int_conditions(
 \item{names}{A named vector for renaming variables}
 
 \item{pred_vars}{int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. Defaults to 0 for all non-interaction variables.}
+
+\item{fixef}{Are there fixed effects within the model? If so these must be supplied in order for predictions to be generated. The argument takes a list of named factors and generates predictions across the mean of all combinations of fixed effects.}
 }
 \value{
 A data frame object that contains all effects, respective conditions, and estimated hypotheses

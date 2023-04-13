@@ -10,8 +10,7 @@ int_graph(
   digits = 3,
   width = 10,
   col_level = "gray95",
-  col_effect = c(`0` = "dodgerblue", `1` = "chartreuse", all = "tomato", effect =
-    "gold"),
+  col_effect = c(`0` = "dodgerblue", `1` = "chartreuse", all = "tomato", effect = "gold"),
   alpha = c(1, 0.5, 1, 0.5),
   col_label = "wheat"
 )
