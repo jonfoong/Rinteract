@@ -1,6 +1,4 @@
 #' @title Wrap labels
-#'
-#'
 #' @description Wrapper around ggplot's label_both function. Wraps and retains variable names in a facet label
 #'
 #' @param width Maximum number of characters before wrapping the strip.

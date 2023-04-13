@@ -1,6 +1,4 @@
 #' @title Graph conditional means and effects from a regression with interactions
-#'
-#'
 #' @description Wrapper around ggplot that graphs all conditional means and effects from the output of `int_conditions`
 #'
 #' @param data output of a `int_conditions` call
@@ -49,7 +47,8 @@ int_graph <-
 
     data <-
       data %>%
-      mutate(label = paste0(round(estimate, digits), "\n(", round(std.error, digits), ")"),
+      mutate(label = ifelse(!is.na(std.error), paste0(round(estimate, digits), "\n(", round(std.error, digits), ")"),
+                            round(estimate, digits)),
              x = 1, y = 1) %>%
       mutate(sign = ifelse(estimate>0, "pos", "neg"),
              sig = ifelse(p.value<.05, TRUE, FALSE))

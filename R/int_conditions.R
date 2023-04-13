@@ -1,6 +1,4 @@
 #' @title Generate conditional means and effects from a model with interactions
-#'
-#'
 #' @description Conducts hypothesis testing across all conditions of interaction effects of a fitted model
 #'
 #' @param mod A model object
@@ -325,9 +323,9 @@ int_conditions <- function(mod,
       mutate(across(everything(),
                     function(x){
 
-                      case_when(x=="all"~mean(df[[cur_column()]], na.rm=TRUE),
-                                x==1~1,
-                                x==0~0)
+                      case_when(x=="all" ~ mean(data[[cur_column()]], na.rm=TRUE),
+                                x==1 ~ 1,
+                                x==0 ~ 0)
                     }))
 
     # attach unaccounted for variables for prediction
