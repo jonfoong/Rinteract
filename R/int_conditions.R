@@ -3,7 +3,6 @@
 #'
 #' @param mod A model object
 #' @param data Dataset used when fitting model
-#' @param demean Should the function also return mean conditions?
 #' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
 #' @param .names A named vector for renaming variables
 #' @param pred_vars int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. Defaults to 0 for all non-interaction variables.
@@ -24,7 +23,6 @@
 
 int_conditions <- function(mod,
                            data = NULL,
-                           demean = TRUE, # if TRUE, returns all demeaned effects
                            conmeans = TRUE, # if TRUE, returns all conditional means
                            main_vars = NULL,
                            .names = NULL, # takes a named vector; if specified, renames variables of model
@@ -145,22 +143,17 @@ int_conditions <- function(mod,
 
       }
 
-      if(demean){
+      # demean, replace 0.5 with means
 
-        # if demean, replace 0.5 with means
-
-        grid <- callapply("cbind", colnames(grid),
-                          function(x) ifelse(grid[x]==0.5, mean(data[[x]]), 1))
-
-
-      } else grid <- grid[apply(grid==1, 2, all)]
+      hyp_grid <- callapply("cbind", colnames(grid),
+                            function(x) ifelse(grid[x]==0.5, mean(data[[x]]), 1))
 
       # now create df of all hypotheses we have to test incl formula
 
       hyp_tests <-
-        callapply("rbind", 1:nrow(grid), function(x){
+        callapply("rbind", 1:nrow(hyp_grid), function(x){
 
-          if (nrow(grid)==1) grid_row <- grid else grid_row <- grid[x,]
+          if (nrow(hyp_grid)==1) grid_row <- hyp_grid else grid_row <- hyp_grid[x,]
 
           for (i in colnames(grid_row)) assign(i, grid_row[[i]])
 
@@ -305,15 +298,15 @@ int_conditions <- function(mod,
 
     df_all <- rbind(cond_effs, df_pred)
 
-    } else df_all <- cond_effs
+  } else df_all <- cond_effs
 
-    # rename variables if specified
+  # rename variables if specified
 
-    if(!is.null(.names)){
+  if(!is.null(.names)){
 
-      for (i in .names)
-        colnames(df_all) <- gsub(i, setNames(names(.names), .names)[i], colnames(df_all))
-    }
+    for (i in .names)
+      colnames(df_all) <- gsub(i, setNames(names(.names), .names)[i], colnames(df_all))
+  }
 
-    return(df_all)
+  return(df_all)
 }

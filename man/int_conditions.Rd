@@ -7,7 +7,6 @@
 int_conditions(
   mod,
   data = NULL,
-  demean = TRUE,
   conmeans = TRUE,
   main_vars = NULL,
   .names = NULL,
@@ -19,8 +18,6 @@ int_conditions(
 \item{mod}{A model object}
 
 \item{data}{Dataset used when fitting model}
-
-\item{demean}{Should the function also return mean conditions?}
 
 \item{main_vars}{A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction}
 
