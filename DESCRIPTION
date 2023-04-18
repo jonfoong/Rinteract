@@ -10,7 +10,7 @@ License: GPL-3
 Depends: 
     R (>= 4.2.2)
 Imports:
-    multcomp (>= 1.4-23)
+    multcomp (>= 1.4-23),
     broom (>= 1.0.4)
 Encoding: UTF-8
 LazyData: true
