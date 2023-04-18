@@ -5,7 +5,7 @@
 #' @param data Dataset used when fitting model
 #' @param demean Should the function also return mean conditions?
 #' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
-#' @param names A named vector for renaming variables
+#' @param .names A named vector for renaming variables
 #' @param pred_vars int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. Defaults to 0 for all non-interaction variables.
 #' @param fixef Are there fixed effects within the model? If so these must be supplied in order for predictions to be generated. The argument takes a list of named factors and generates predictions across the mean of all combinations of fixed effects.
 #'
@@ -198,7 +198,9 @@ int_conditions <- function(mod,
 
           if(length(remn)!=0)
             remn <- sapply(colnames(remn),
-                           function(x) paste(x, "=", ifelse(remn %in% 0:1, remn, "'all'")))
+                           function(x) paste(x, "=", ifelse(remn[x] %in% 0:1, remn[x] , "'all'")))
+
+          # write test here to check for length of con_mean!
 
           con_mean <-
             unique(c(remn, paste(strsplit_vec(dat$term, ":"), "=1")))

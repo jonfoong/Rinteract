@@ -1,7 +1,11 @@
 library(testthat)
 library(Rinteract)
 
-
+test_that("int_conditions() returns a data frame", {
+  mod <- lm(Y~X1*X2*X3, toydata)
+  output_table <- int_conditions(mod, data = toydata)
+  expect_is(output_table, "data.frame")
+})
 
 
 
