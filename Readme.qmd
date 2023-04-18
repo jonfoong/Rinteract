@@ -1,0 +1,31 @@
+---
+format: gfm
+---
+
+```{r, echo = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  eval = TRUE,
+  echo = TRUE,
+  comment = "#>",
+  fig.path = "vignettes/vignette-",
+  message=FALSE,
+  warning=FALSE
+)
+# pkgdown::build_site()
+```
+
+# Rinteract
+
+### Installation
+
+```{r install, eval=FALSE}
+
+devtools::install_github("jonfoong/Rinteract")
+```
+
+## Overview
+
+Rinteract makes it easy to output all conditional effects in models with interaction terms instead of computing hypothesis tests manually.
+
+Currently only accepts `lm`, `glm` and `lm_robust` models.
