@@ -18,14 +18,8 @@
 #' cond_tab <- int_conditions(mod, data = dat, main_vars = c("X1", "X2"), names = c(A1 = "X1", A2 = "X2"))
 #'
 #' @export
-#' @importFrom dplyr %>% select mutate rowwise across if_all select_if bind_rows rename_with cur_column
-#' @importFrom tidyr separate
-#' @importFrom tidyselect all_of everything
-#' @importFrom stringr str_replace_all
 #' @importFrom multcomp glht
-#' @importFrom rlang is_empty
 #' @importFrom broom tidy
-
 
 int_conditions <- function(mod,
                            data = NULL,
@@ -46,31 +40,16 @@ int_conditions <- function(mod,
 
   if(is.null(main_vars)){
 
-    full_term <-
-      all_vars[sapply(all_vars,
-                      function(x){
+    ind <- which.max(sapply(all_vars,
+                            function(x) length(strsplit_vec(x, ":"))))
 
-                        len <-
-                          strsplit(x, ":") %>%
-                          unlist() %>%
-                          length()
-
-                      }) %>%
-                 which.max()]
+    full_term <- all_vars[ind]
 
     main_vars <-
-      full_term %>%
-      strsplit(":") %>%
-      unlist()
+      strsplit_vec(full_term, ":")
 
-  } else {
+  } else full_term <- paste(main_vars, collapse = ":")
 
-    # extract the full x-way interaction term which we use later
-
-    full_term <-
-      paste(main_vars, collapse = ":")
-
-  }
 
   # how many terms?
 
@@ -79,230 +58,212 @@ int_conditions <- function(mod,
   # exclude those we are not conditioning on
 
   vars <-
-    all_vars[all_vars %>%
-               sapply(function(x) all((strsplit(x, ":") %>% unlist()) %in% main_vars))]
+    all_vars[sapply(all_vars,
+                    function(x) all(strsplit_vec(x, ":") %in% main_vars))]
 
 
-  # get each interaction effect and the conditions they are marginal to
+  df_effects <-
+    callapply("rbind", vars, function(x){
 
-  margins_df <-
-    suppressWarnings(data.frame(marginal = vars) %>%
-                       separate(marginal, into = LETTERS[1:interacts],
-                                sep = ":", remove = FALSE))
+      term <- strsplit_vec(x, ":")
 
-  df <-
-    lapply(vars, function(x){
+      marginal <- vars[sapply(strsplit(vars, ":"),
+                              function(x) all(term %in% x))]
 
-      marginal <-
-        margins_df %>%
-        rowwise() %>%
-        filter(all(strsplit(x, ":") %>%
-                     unlist() %in% eval(parse(text = paste0("c(", paste(LETTERS[1:interacts], collapse = ","), ")"))))) %>%
-        .$marginal
+      data.frame(marginal = marginal, term = x)
 
-      data.frame(marginal = marginal,
-                 term = x)
-    }) %>%
-    bind_rows()
+    })
 
-  # create a dataframe with all values as variable names
+  # create a matrix with all values as variable names
 
-  mat <-
-    vars %>%
-    as.data.frame() %>%
-    t() %>%
-    .[rep(1, nrow(df)), ]
+  df_mat <-
+    callapply("rbind", 1:nrow(df_effects), function(x) t(vars))
 
-  colnames(mat) <- vars
-  rownames(mat) <- NULL
-
-  # now combine
-
-  df <-
-    cbind(df, mat)
+  colnames(df_mat) <- vars
 
   # create a sparse matrix of 0s and 1s to feed into our hypothesis testing
 
-  df <-
-    df %>% rowwise() %>%
-    mutate(across(all_of(vars),
-                  function(x) ifelse(all((strsplit(x, ":") %>%
-                                            unlist) %in% (strsplit(marginal, ":") %>% unlist)) & all((strsplit(term, ":") %>% unlist) %in% (strsplit(x, ":") %>% unlist)), 1, 0))) %>%
-    mutate(intercept = 0, .after = term)
+  df_effects <-
+    callapply("rbind", 1:nrow(df_effects), function(x){
+
+      df <- df_effects[x,]
+      mat <- df_mat[x,]
+
+      new_mat <-
+        sapply(vars,
+               function(y){
+
+                 vec <- strsplit_vec(mat[[y]], ":")
+
+                 ifelse(all(vec %in% strsplit_vec(df$marginal, ":")) &
+                          all(strsplit_vec(df$term, ":") %in% vec),
+                        1, 0)
+               })
+
+      new_df <- cbind(df, rbind(new_mat))
+      return(new_df)
+
+    })
 
   # now extract coeffs and perform hypothesis testing
 
   cond_effs <-
-    lapply(1:nrow(df),
-           function(x){
+    callapply("rbind", 1:nrow(df), function(x){
 
-             dat <- df[x,]
+      dat <- df[x,]
 
-             # extract all marginal terms
+      # extract all marginal terms
 
-             form_terms <-
-               dat %>%
-               select_if(function(x) x==1) %>%
-               colnames()
+      form_terms <-
+        colnames(dat)[apply(dat==1, 2, all)]
 
-             # create formula
+      #extract all marginal terms in the formula
 
-             form <- paste(form_terms, collapse = "+")
+      main_terms <-
+        strsplit_vec(dat$term, ":")
 
-             #extract all marginal terms in the formula
+      marg_terms <-
+        setdiff(unique(strsplit_vec(form_terms, ":")), main_terms)
 
-             main_terms <-
-               dat$term %>%
-               strsplit(":") %>%
-               unlist()
+      #create a grid of main terms first
 
-             marg_terms <-
-               form_terms %>%
-               strsplit(":") %>%
-               unlist() %>%
-               unique() %>%
-               setdiff(main_terms)
+      grid <-
+        eval(parse(text = paste0("data.frame(",
+                                 paste(paste0(main_terms, "=1"),
+                                       collapse = ","), ")")))
 
-             #create a grid of main terms first
+      # if there are marginal conditions, create matrix of permutations and add back into grid
 
-             grid <-
-               matrix(1, 1, length(main_terms)) %>%
-               as.data.frame()
+      if(length(marg_terms)!=0){
 
-             colnames(grid) <- main_terms
+        marg_grid <-
+          eval(parse(text = paste0("expand.grid(",
+                                   paste(paste0(marg_terms, "=c(0.5,1)"),
+                                         collapse = ","), ")")))
+        grid <- cbind(marg_grid, grid)
 
+      }
 
-             # if there are marginal conditions, create matrix of permutations and add back into grid
+      if(demean){
 
-             if(!is_empty(marg_terms)){
+        # if demean, replace 0.5 with means
 
-               grid <-
-                 eval(parse(text = paste0("expand.grid(",
-                                          paste0(marg_terms, "=c(0.5,1)") %>%
-                                            paste(collapse = ","), ")"))) %>%
-                 cbind(grid)
-
-             }
-
-             if(!demean){
-
-               grid <- grid %>%
-                 filter(if_all(everything(), function(x) x==1))
-
-             } else {
-
-               # if demean, replace 0.5 with means
-
-               grid <-
-                 grid %>%
-                 mutate(across(everything(),
-                               function(x){
-                                 m <-
-                                   data[[cur_column()]] %>%
-                                   mean(na.rm = TRUE)
-
-                                 ifelse(x==0.5, m, x)
-
-                               }))
-             }
-
-             # now create df of all hypotheses we have to test incl formula
-
-             hyp_tests <-
-               grid %>%
-               mutate(form = form) %>%
-               separate(form, into = paste0("t_", 1:length(form_terms)),
-                        sep = "\\+") %>%
-               mutate(across(starts_with("t"), function(x){
-
-                 form <- str_replace_all(x, "\\:", "*")
-                 num <- eval(parse(text = form))
-                 sprintf("%f*%s", num, x)
-               })) %>%
-               rowwise() %>%
-               mutate(form = paste0(paste(across(starts_with("t_")),
-                                          collapse = "+"), "=0"))
-
-             # now we run hypotheses one by one
-
-             all_hyps <-
-               lapply(1:nrow(hyp_tests),
-                      function(x){
-
-                        dat_hyp <- hyp_tests[x,]
+        grid <- callapply("cbind", colnames(grid),
+                          function(x) ifelse(grid[x]==0.5, mean(data[[x]]), 1))
 
 
-                        #run linear hypothesis using formula
-                        test <-
-                          glht(mod, dat_hyp$form) %>%
-                          tidy() %>%
-                          dplyr::select(estimate, std.error, `p.value`=adj.p.value)
+      } else grid <- grid[apply(grid==1, 2, all)]
 
-                        # extract all conditions
+      # now create df of all hypotheses we have to test incl formula
 
-                        # get conditions for when x=1 or mean
+      hyp_tests <-
+        callapply("rbind", 1:nrow(grid), function(x){
 
-                        con_mean <-
-                          c(dat_hyp %>%
-                              dplyr::select(!matches(sprintf("t_\\d|form|%s", dat$term))) %>%
-                              mutate(across(everything(),
-                                            function(x) paste0(cur_column(), " = ",
-                                                               ifelse(!x %in% 0:1, "'all'", x)))) %>%
-                              unlist(),
-                            dat$term %>% strsplit(":") %>% unlist() %>% paste0(" = 1")
-                          ) %>%
-                          unique()
+          if (nrow(grid)==1) grid_row <- grid else grid_row <- grid[x,]
 
-                        con_mean <-
-                          eval(parse(text = paste0("data.frame(",
-                                                   paste(con_mean, collapse=","), ")")))
-                        # get all zero conditions
+          for (i in colnames(grid_row)) assign(i, grid_row[[i]])
 
-                        zero_names <-
-                          main_vars %>%
-                          setdiff(names(con_mean))
+          form <- paste0(paste(sapply(form_terms, function(x){
 
-                        con_zero <-
-                          matrix(0, 1, length(zero_names))
+            val <- eval(parse(text = gsub("\\:", "\\*", x)))
 
-                        colnames(con_zero) <- zero_names
+            sprintf("%s*%s", val, x)
+          }),
+          collapse = " + "), " = 0")
 
-                        conditions <-
-                          cbind(con_mean, con_zero)
+          transform(grid_row, form = form)
 
-                        # build dataframe
+        })
 
-                        new_df <-
-                          conditions %>%
-                          mutate(effect = dat$term, .before = 1) %>%
-                          mutate(across(everything(), function(x) as.character(x))) %>%
-                          cbind(test)
+      # now we run hypotheses one by one
 
-                      }) %>%
-               bind_rows()
+      all_hyps <-
+        callapply("rbind", 1:nrow(hyp_tests), function(x){
 
-           }) %>%
-    bind_rows()
+          dat_hyp <- hyp_tests[x,]
+
+
+          #run linear hypothesis using formula
+
+          test <- tidy(glht(mod, dat_hyp$form))[c("estimate", "std.error", "adj.p.value")]
+
+          colnames(test) <- c("estimate", "std.error", "p.value")
+
+          # extract all conditions
+
+          # get conditions for when x=1 or mean
+
+          remn <- dat_hyp[!colnames(dat_hyp) %in% c("form", strsplit_vec(dat$term, ":"))]
+
+          if(length(remn)!=0)
+            remn <- sapply(colnames(remn),
+                           function(x) paste(x, "=", ifelse(remn %in% 0:1, remn, "'all'")))
+
+          con_mean <-
+            unique(c(remn, paste(strsplit_vec(dat$term, ":"), "=1")))
+
+          con_mean <-
+            eval(parse(text = paste0("data.frame(",
+                                     paste(con_mean, collapse=","), ")")))
+          # get all zero conditions
+
+          zero_names <-
+            setdiff(main_vars, names(con_mean))
+
+          con_zero <-
+            matrix(0, 1, length(zero_names))
+
+          colnames(con_zero) <- zero_names
+
+          conditions <-
+            cbind(con_mean, con_zero)
+
+          # build dataframe
+
+          conditions$effect <- dat$term
+
+          conditions <- cbind(conditions, test)
+
+          return(conditions)
+
+        })
+    })
 
   # rename variables if specified
 
-  if(!is.null(names)){
+  if(!is.null(.names)){
 
-    cond_effs <-
-      cond_effs %>%
-      mutate(effect = str_replace_all(effect,
-                                      setNames(names(names), names))) %>%
-      rename_with(.cols = all_of(main_vars),
-                  .fn = function(x) str_replace_all(x, setNames(names(names), names)))
+    main_vars <- setNames(names(.names), .names)
+
+    cond_effs$effect <- sapply(1:nrow(cond_effs), function(x){
+
+      effect <- cond_effs[x, "effect"]
+
+      new_name <- paste(sapply(strsplit_vec(effect, ":"),
+                               function(y) main_vars[y]),
+                        collapse = ":")
+      return(new_name)
+
+    })
+
+    for (i in .names)
+      colnames(cond_effs) <- gsub(i, main_vars[i], colnames(cond_effs))
 
   }
 
   # rename var columns
 
-  cond_effs <-
-    cond_effs %>%
-    mutate(across(all_of(main_vars), function(x) ifelse(grepl(cur_column(), effect), "effect", x))) %>%
-    dplyr::select(-effect)
+  cond_effs <- callapply("rbind", 1:nrow(cond_effs), function(x){
+
+    eff_df <- cond_effs[x,]
+    effect <- eff_df$effect
+    eff_df[eff_df==1 & colnames(eff_df) %in% strsplit_vec(effect, ":")] <- "effect"
+
+    return(eff_df)
+  })
+
+  cond_effs <- cond_effs[setdiff(names(cond_effs), "effect")]
+  cond_effs <- transform(cond_effs, value = "Causal effect")
 
   # generate conditional means from predictions
 
@@ -310,46 +271,31 @@ int_conditions <- function(mod,
 
     # first get all permutations
 
-    all_p <-
-      lapply(main_vars, function(x) c(0, 1, "all"))
+    all_pred <-
+      callapply("expand.grid", main_vars, function(x) c(0, 1, "all"))
 
-    all_p <-
-      do.call(expand.grid, all_p)
+    colnames(all_pred) <- main_vars
 
-    colnames(all_p) <- main_vars
+    # get means
 
-    df_p <-
-      all_p %>%
-      mutate(across(everything(),
-                    function(x){
-
-                      case_when(x=="all" ~ mean(data[[cur_column()]], na.rm=TRUE),
-                                x==1 ~ 1,
-                                x==0 ~ 0)
-                    }))
+    df_pred <- callapply("cbind", colnames(all_p),
+                         function(x) ifelse(all_p[x]=="all", mean(data[[x]]), 1))
 
     # attach unaccounted for variables for prediction
 
     extra_vars <- setdiff(all_vars, unique(df$marginal))
 
-    if(length(extra_vars)>0 & is.null(pred_vars)){
+    if(length(extra_vars)!=0 & is.null(pred_vars)){
 
-      pred_vars <-
-        as.data.frame(matrix(0, 1, length(extra_vars)))
+      pred_vars <- as.data.frame(matrix(0, 1, length(extra_vars)))
 
       colnames(pred_vars) <- extra_vars
-
     }
 
-    if(length(extra_vars)>0){
+    if(length(extra_vars)!=0)
+      df_pred <- cbind(df_pred, pred_vars)
 
-      df_p <-
-        cbind(df_p,
-              pred_vars[rep(1, nrow(df_p)),])
-
-    }
-
-    # are there fixed effects? If yes and not specified take average across all fixef levels
+    # are there fixed effects? If yes takes average across all fixef levels
 
     if(!is.null(fixef)){
 
@@ -357,44 +303,26 @@ int_conditions <- function(mod,
 
       fixef <- expand.grid(fixef)
 
-      preds<-
-        lapply(1:nrow(fixef),
-               function(x){
-
-                 fixef_df <-
-                   fixef[x,] %>%
-                   as.data.frame()
-
-                 names(fixef_df) <- names(fixef)
-
-                 predict(mod, df_p %>%
-                           cbind(fixef_df))
-               }) %>%
-
-        do.call(rbind, .) %>%
-        apply(2, mean)
-
-    } else {
-
       preds <-
-        predict(mod, df_p)
+        callapply("rbind", 1:nrow(fixef), function(x){
 
-    }
+          fixef_df <- as.data.frame(fixef[x,])
 
-    df_p <-
-      data.frame(estimate = preds,
-                 std.error = NA,
-                 p.value = NA)
+          colnames(fixef_df) <- names(fixef)
 
-    df_p <-
-      cbind(all_p, df_p)
+          predict(mod, cbind(df_pred, fixef_df))
+        })
 
-    cond_effs %>%
-      rbind(df_p) %>%
-      mutate(value = if_any(all_of(main_vars),  ~. == "effect"),
-             value = ifelse(value, "Causal effect", "Level"))
+      preds <- apply(preds, 2, mean)
 
-  } else cond_effs
+    } else preds <- predict(mod, df_pred)
 
+    df_pred <- data.frame(all_pred,
+                          estimate = preds, std.error = NA, p.value = NA)
 
+    df_pred <- transform(df_pred, value = "Level")
+
+    return(rbind(cond_effs, df_pred))
+
+  } else return(cond_effs)
 }
