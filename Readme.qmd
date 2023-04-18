@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 # Rinteract
 
-### Installation
+## Installation
 
 ```{r install, eval=FALSE}
 
