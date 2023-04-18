@@ -26,7 +26,7 @@ int_conditions <- function(mod,
                            demean = TRUE, # if TRUE, returns all demeaned effects
                            conmeans = TRUE, # if TRUE, returns all conditional means
                            main_vars = NULL,
-                           names = NULL, # takes a named vector; if specified, renames variables of model
+                           .names = NULL, # takes a named vector; if specified, renames variables of model
                            pred_vars = NULL,
                            fixef = NULL # takes a list of named factors of fixed effects and their levels
 ){
@@ -108,9 +108,9 @@ int_conditions <- function(mod,
   # now extract coeffs and perform hypothesis testing
 
   cond_effs <-
-    callapply("rbind", 1:nrow(df), function(x){
+    callapply("rbind", 1:nrow(df_effects), function(x){
 
-      dat <- df[x,]
+      dat <- df_effects[x,]
 
       # extract all marginal terms
 
@@ -229,28 +229,6 @@ int_conditions <- function(mod,
         })
     })
 
-  # rename variables if specified
-
-  if(!is.null(.names)){
-
-    main_vars <- setNames(names(.names), .names)
-
-    cond_effs$effect <- sapply(1:nrow(cond_effs), function(x){
-
-      effect <- cond_effs[x, "effect"]
-
-      new_name <- paste(sapply(strsplit_vec(effect, ":"),
-                               function(y) main_vars[y]),
-                        collapse = ":")
-      return(new_name)
-
-    })
-
-    for (i in .names)
-      colnames(cond_effs) <- gsub(i, main_vars[i], colnames(cond_effs))
-
-  }
-
   # rename var columns
 
   cond_effs <- callapply("rbind", 1:nrow(cond_effs), function(x){
@@ -278,12 +256,12 @@ int_conditions <- function(mod,
 
     # get means
 
-    df_pred <- callapply("cbind", colnames(all_p),
-                         function(x) ifelse(all_p[x]=="all", mean(data[[x]]), 1))
+    df_pred <- callapply("cbind", colnames(all_pred),
+                         function(x) ifelse(all_pred[x]=="all", mean(data[[x]]), 1))
 
     # attach unaccounted for variables for prediction
 
-    extra_vars <- setdiff(all_vars, unique(df$marginal))
+    extra_vars <- setdiff(all_vars, unique(df_effects$marginal))
 
     if(length(extra_vars)!=0 & is.null(pred_vars)){
 
@@ -322,7 +300,17 @@ int_conditions <- function(mod,
 
     df_pred <- transform(df_pred, value = "Level")
 
-    return(rbind(cond_effs, df_pred))
+    df_all <- rbind(cond_effs, df_pred)
 
-  } else return(cond_effs)
+    } else df_all <- cond_effs
+
+    # rename variables if specified
+
+    if(!is.null(.names)){
+
+      for (i in .names)
+        colnames(df_all) <- gsub(i, setNames(names(.names), .names)[i], colnames(df_all))
+    }
+
+    return(df_all)
 }
