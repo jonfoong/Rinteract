@@ -24,7 +24,7 @@
 #'
 #' @export
 #' @importFrom dplyr %>% mutate
-#' @importFrom ggplot2 ggplot theme_void theme element_rect element_text margin rel aes geom_rect scale_fill_manual geom_text
+#' @importFrom ggplot2 ggplot theme_void theme element_rect element_text margin rel aes geom_rect scale_fill_manual geom_text scale_color_manual
 #' @importFrom ggh4x facet_nested
 
 

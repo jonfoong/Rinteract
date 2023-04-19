@@ -60,4 +60,15 @@ test_that("fixef works", {
   expect_s3_class(out, "data.frame")
 })
 
+# test plm
+test_that("correct error output when incorrect model supplied", {
+  mod <- plm::plm(Y~X1*X2*X3, data = toydata, index = "FE")
+  expect_error(int_conditions(mod, toydata), regexp = "^Only lm, lm_robust, and glm models accepted$")
+})
+
+# test lme4
+
+
+
+
 
