@@ -30,6 +30,10 @@ int_conditions <- function(mod,
                            fixef = NULL # takes a list of named factors of fixed effects and their levels
 ){
 
+  # stop if model input not accepted
+
+  if (!any(class(mod) %in% c("lm", "glm", "lm_robust"))) stop("Only lm, lm_robust, and glm models accepted")
+
   # extract all vars from model
 
   all_vars <-
@@ -272,6 +276,8 @@ int_conditions <- function(mod,
     # are there fixed effects? If yes takes average across all fixef levels
 
     if(!is.null(fixef)){
+
+      if(class(unlist(fixef))!="factor") stop("Please supply fixed effects as factors!")
 
       # convert into dataframe and factor
 
