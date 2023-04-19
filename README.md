@@ -132,7 +132,7 @@ We can then graph the result:
 library(ggplot2)
 
 int_graph(dat, X1~X2+X3) +
-  ggtitle("test")
+  ggtitle("all cond effects")
 ```
 
 ![](vignettes/vignette-unnamed-chunk-3-1.png)

@@ -62,6 +62,6 @@ We can then graph the result:
 library(ggplot2)
 
 int_graph(dat, X1~X2+X3) +
-  ggtitle("test")
+  ggtitle("all cond effects")
 
 ```
