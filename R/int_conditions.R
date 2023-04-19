@@ -252,12 +252,19 @@ int_conditions <- function(mod,
     all_pred <-
       callapply("expand.grid", main_vars, function(x) c(0, 1, "all"))
 
+    all_pred <- as.data.frame(apply(all_pred, 2, as.character))
+
     colnames(all_pred) <- main_vars
 
     # get means
 
-    df_pred <- callapply("cbind", colnames(all_pred),
-                         function(x) ifelse(all_pred[x]=="all", mean(data[[x]]), 1))
+    # add test here for predictions
+
+    df_pred <- all_pred
+
+    for(i in colnames(df_pred)) df_pred[df_pred[i]=="all", i] <- mean(data[[i]])
+
+    df_pred <- as.data.frame(apply(df_pred, 2, as.numeric))
 
     # attach unaccounted for variables for prediction
 
