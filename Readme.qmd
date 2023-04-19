@@ -40,14 +40,15 @@ Note: As of now the package only accepts `lm`, `glm` and `lm_robust` models.
 
 ## Usage
 
-
-
 ```{r}
 library(Rinteract)
+library(kableExtra)
 
 mod <- lm(Y~X1*X2*X3, toydata)
 dat <- int_conditions(mod, toydata)
-dat |> head()
+dat |> 
+  head() |>
+  kable(digits = 3)
 
 
 ```
@@ -55,9 +56,12 @@ dat |> head()
 We can then graph the result:
 
 ```{r}
+#| fig.width: 10
+#| fig.height: 6
 
+library(ggplot2)
 
-
-
+int_graph(dat, X1~X2+X3) +
+  ggtitle("test")
 
 ```

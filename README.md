@@ -47,17 +47,92 @@ models.
 
 ``` r
 library(Rinteract)
+library(kableExtra)
 
 mod <- lm(Y~X1*X2*X3, toydata)
 dat <- int_conditions(mod, toydata)
-dat |> head()
-#>       X1  X2  X3    estimate  std.error   p.value         value
-#> 1 effect   0   0 -0.26297759 0.18733435 0.1606951 Causal effect
-#> 2 effect all   0 -0.17722875 0.13035876 0.1742825 Causal effect
-#> 3 effect   1   0 -0.09009687 0.18121544 0.6191716 Causal effect
-#> 4 effect   0 all -0.17663386 0.12747648 0.1661747 Causal effect
-#> 5 effect   0   1 -0.09629085 0.17371341 0.5794926 Causal effect
-#> 6 effect all all -0.03022122 0.09054353 0.7386195 Causal effect
+dat |> 
+  head() |>
+  kable(digits = 3)
 ```
 
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> X1 </th>
+   <th style="text-align:left;"> X2 </th>
+   <th style="text-align:left;"> X3 </th>
+   <th style="text-align:right;"> estimate </th>
+   <th style="text-align:right;"> std.error </th>
+   <th style="text-align:right;"> p.value </th>
+   <th style="text-align:left;"> value </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:right;"> -0.263 </td>
+   <td style="text-align:right;"> 0.187 </td>
+   <td style="text-align:right;"> 0.161 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> all </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:right;"> -0.177 </td>
+   <td style="text-align:right;"> 0.130 </td>
+   <td style="text-align:right;"> 0.174 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:right;"> -0.090 </td>
+   <td style="text-align:right;"> 0.181 </td>
+   <td style="text-align:right;"> 0.619 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> all </td>
+   <td style="text-align:right;"> -0.177 </td>
+   <td style="text-align:right;"> 0.127 </td>
+   <td style="text-align:right;"> 0.166 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:right;"> -0.096 </td>
+   <td style="text-align:right;"> 0.174 </td>
+   <td style="text-align:right;"> 0.579 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> all </td>
+   <td style="text-align:left;"> all </td>
+   <td style="text-align:right;"> -0.030 </td>
+   <td style="text-align:right;"> 0.091 </td>
+   <td style="text-align:right;"> 0.739 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+</tbody>
+</table>
+
 We can then graph the result:
+
+``` r
+library(ggplot2)
+
+int_graph(dat, X1~X2+X3) +
+  ggtitle("test")
+```
+
+![](vignettes/vignette-unnamed-chunk-3-1.png)
