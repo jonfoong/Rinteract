@@ -40,12 +40,7 @@ conditions beyond just the mean. Consider a hypothetical drug treatment
 for which we are also interested in heterogeneity across genders. We
 estimate a simple model:
 
-<p style="text-align: center;">
-Centered text
-</p>
-<center>
-$Y = \alpha + \beta*Treat + \gamma*Female + \delta*Treat*Female+\epsilon$
-</center>
+$$Y = \alpha + \beta * Treat + \gamma * Female + \delta * Treat * Female+\epsilon$$
 
 The estimated parameter $\hat{\delta}$ gives us the difference in
 treatment effect between male and female patients. However, we are also
