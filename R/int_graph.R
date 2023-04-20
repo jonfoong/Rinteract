@@ -12,7 +12,7 @@
 #' @param alpha_e The alpha level for the effect panels. Defaults to 1.
 #' @param alpha_l The alpha level for the level panels. Defaults to 1.
 #'
-#' @return A ggplot object that plots all conditional means and effects from the output of `int_conditions`
+#' @return A ggplot object that plots all conditional means and effects from the output of `int_conditions`. Values in red are negative estimates while bold represents estimates with p<0.05.
 #' @examples
 #' set.seed(1)
 #' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE), X3 = sample(0:1, 100, replace=TRUE))
