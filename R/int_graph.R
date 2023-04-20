@@ -5,25 +5,26 @@
 #' @param facet A formula of the form X~Y with all interaction terms specified. Must be supplied.
 #' @param digits How many decimal digits should be displayed?
 #' @param width Maximum number of characters before wrapping the strip.
-#' @param col_level Colour of background panel for all levels. Different colours should be used to differentiate between conditional levels and effects.
-#' @param col_effect Colour of background panel for each effect type. Must be a named vector with names 0, 1, all, effect. Only needed if running 3 and 4 way interactions
-#' @param alpha Alpha value for each facet row in a fourway interaction. The purpose of this is to create a dark, then light contrast between rows that are faceted.
+#' @param col_effect Colour of background panel for each effect type. The default colors are taken from `RColorBrewer`'s Pastel1 palette. Length of vector must be either 1 (in which case all faceted effects have the same color) or n, where n is the number of faceted variables in the dataset.
+#' @param col_level Colour of background panel for all levels.
 #' @param col_label Background colour of label strip.
+#' @param eff_var Which variable should the color for the effect panel be faceted on? Defaults to the variable used for the outer facet.
+#' @param alpha_e The alpha level for the effect panels. Defaults to 1.
+#' @param alpha_l The alpha level for the level panels. Defaults to 1.
 #'
 #' @return A ggplot object that plots all conditional means and effects from the output of `int_conditions`
 #' @examples
 #' set.seed(1)
-#' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE))
-#' dat <- dat |> mutate(Y = X1 + 2*X2 + 3*X1*X2 + rnorm(1))
-#' mod <- lm(Y~X1*X2, dat)
-#' cond_tab <- int_conditions(mod, data = dat, main_vars = c("X1", "X2"), names = c(A1 = "X1", A2 = "X2"))
-#' plot <- int_graph(cond_tab, facet = X1~X2)
+#' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE), X3 = sample(0:1, 100, replace=TRUE))
+#' dat <- dat |> mutate(Y = X1 + 2*X2 + 3*X1*X2*X3 + rnorm(1))
+#' mod <- lm(Y~X1*X2*X3, dat)
+#' cond_tab <- int_conditions(mod, data = dat, names = c(A1 = "X1", A2 = "X2", A3 = "X3"))
+#' plot <- int_graph(cond_tab, facet = A1~A2+A3)
 #'
 #' # Output is a ggplot object that can be manually manipulated further
 #' plot + ggtitle("testing")
 #'
 #' @export
-#' @importFrom dplyr %>% mutate
 #' @importFrom ggplot2 ggplot theme_void theme element_rect element_text margin rel aes geom_rect scale_fill_manual geom_text scale_color_manual
 #' @importFrom ggh4x facet_nested
 
@@ -34,37 +35,49 @@ int_graph <-
            facet = NULL, # no default, must be supplied
            digits = 3, # number of digits to display after decimal point
            width = 10, # width for wrapping
-           col_level = "gray95",
-           col_effect = c("0" = "dodgerblue", # must be named vector
-                          "1" = "chartreuse",
-                          "all" ="tomato",
-                          "effect" = "gold"),
-           alpha = c(1, 0.5, 1, 0.5), # when plotting a 4way interaction, what is the alpha value for each facet row?
-           col_label = "wheat"
+           col_effect = c("#FBB4AE",
+                          "#B3CDE3",
+                          "#CCEBC5",
+                          "#DECBE4"),
+           col_level = "#F0F0F0",
+           col_label = "#DEEBF7",
+           eff_var = NULL,
+           alpha_e = 1,
+           alpha_l = 1
   ){
 
     if(is.null(facet)) stop("facet argument cannot be empty!")
 
+
+    # first round digits
+
+    data[,c("estimate", "std.error", "p.value")] <-
+      apply(data[,c("estimate", "std.error", "p.value")], 2, function(x) round(x, digits))
+
     data <-
-      data %>%
-      mutate(label = ifelse(!is.na(std.error), paste0(round(estimate, digits), "\n(", round(std.error, digits), ")"),
-                            round(estimate, digits)),
-             x = 1, y = 1) %>%
-      mutate(sign = ifelse(estimate>0, "pos", "neg"),
-             sig = ifelse(p.value<.05, TRUE, FALSE))
+      transform(data,
+                label = ifelse(!is.na(std.error),
+                               paste0(estimate, "\n(", std.error, ")"), estimate),
+                x = 1,
+                y = 1,
+                sign = ifelse(estimate > 0, "pos", "neg"),
+                sig = ifelse(p.value < .05, TRUE, FALSE))
+
+    # Now set the background
 
     p <-
-      data |>
-      ggplot(aes(x, y, label = label)) +
+      ggplot(data, aes(x, y, label = label)) +
       facet_nested(facet,
                    labeller = label_wrap_gen_both(width),
-                   switch="y") +
+                   switch = "y") +
       theme_void() +
       theme(legend.position = "none",
-            strip.background = element_rect(fill=col_label, colour = "white",
-                                            linewidth = 0.8,
+            strip.background = element_rect(fill = col_label,
+                                            colour = "white",
+                                            linewidth = 0.1,
                                             linetype = 1),
-            strip.text = element_text(colour = "black", size = rel(1),
+            strip.text = element_text(colour = "black",
+                                      size = rel(1),
                                       margin = margin(5, 5, 5, 5))
       )
 
@@ -72,60 +85,38 @@ int_graph <-
 
     facet_char <- setdiff(as.character(facet), "~")
 
-    lhs <- trimws(unlist(strsplit(facet_char[1], "\\+")))[1]
-    rhs <- trimws(unlist(strsplit(facet_char[2], "\\+")))[1]
+    lhs <- trimws(strsplit_vec(facet_char[1], "\\+"))[1]
+    rhs <- trimws(strsplit_vec(facet_char[2], "\\+"))[1]
 
     vars <-
       trimws(unlist(strsplit(facet_char, "\\+")))
 
-    if(length(vars)==2){
+    # Now plot for different var lengths
 
-      p <-
-        p +
-        geom_rect(aes(fill = value), xmin = -Inf, xmax = Inf,
-                  ymin = -Inf, ymax = Inf, alpha = 1) +
-        scale_fill_manual(values = c("Level" = "gray95", "Causal effect" = "cadetblue1"))
+    # first get color palette for effects
 
-    } else if(length(vars)==3){
+    if(length(col_effect)==1) col_effect <- rep(col_effect, 4)
 
-      # which variable to set effect colours
+    names(col_effect) <- c("0", "1", "all", "effect")
 
-      eff_var <-
-        c(lhs, rhs)[grepl("\\+", facet_char)]
+    # which variable to set effect colours
 
-      p <-
-        p +
-        geom_rect(aes(fill = eval(parse(text = eff_var))), xmin = -Inf, xmax = Inf,
-                  ymin = -Inf, ymax = Inf, alpha = 1) +
-        geom_rect(data = subset(data, value=="Level"), fill = col_level, xmin = -Inf, xmax = Inf,
-                  ymin = -Inf, ymax = Inf) +
-        scale_fill_manual(values=col_effect)
+    # if not specified, it is by default the outer facet(s)
 
-
-    } else if(length(vars)==4){
-
-      loop_df <-
-        data.frame(vals = names(col_effect), alpha = alpha)
-
-      for (i in 1:4){
-
-        p <-
-          p +
-          geom_rect(data = subset(data, eval(parse(text = lhs[1]))==loop_df$vals[i] & value!="Level"),
-                    aes(fill = eval(parse(text = rhs[1]))),
-                    xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, alpha = loop_df$alpha[i])
-
-      }
-
-      p <-
-        p +
-        scale_fill_manual(values = col_effect) +
-        geom_rect(data = subset(data, value=="Level"), fill = col_level, xmin = -Inf, xmax = Inf,
-                  ymin = -Inf, ymax = Inf)
-
-    }
+    if(is.null(eff_var)) eff_var <- c(rhs, lhs)[grepl("\\+", facet_char)][1]
+    if(length(eff_var)==0) eff_var <- vars[1]
 
     p +
+      # first fill with effect colors
+      geom_rect(aes(fill = eval(parse(text = eff_var))), xmin = -Inf, xmax = Inf,
+                ymin = -Inf, ymax = Inf, alpha = alpha_e) +
+      scale_fill_manual(values=col_effect) +
+
+      # now layer over the colors for the levels; if no fill enter NA
+      geom_rect(data = subset(data, value=="Level"), fill = col_level, xmin = -Inf, xmax = Inf,
+                ymin = -Inf, ymax = Inf, alpha = alpha_l) +
+
+    # now add colors for signs and significance
       geom_text(aes(color = sign,
                     fontface = ifelse(sig, 2, 1))) +
       scale_color_manual(values = c("pos" = "black", "neg" = "red"))

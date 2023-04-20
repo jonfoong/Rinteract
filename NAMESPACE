@@ -3,8 +3,6 @@
 export(int_conditions)
 export(int_graph)
 importFrom(broom,tidy)
-importFrom(dplyr,"%>%")
-importFrom(dplyr,mutate)
 importFrom(ggh4x,facet_nested)
 importFrom(ggplot2,aes)
 importFrom(ggplot2,element_rect)

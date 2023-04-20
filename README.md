@@ -1,4 +1,6 @@
 
+    Warning: package 'ggplot2' was built under R version 4.2.3
+
 # Rinteract
 
 [![R-CMD-check](https://github.com/jonfoong/Rinteract/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jonfoong/Rinteract/actions/workflows/R-CMD-check.yaml)[![codecov](https://codecov.io/github/jonfoong/Rinteract/branch/main/graph/badge.svg?token=2SOK4T1220)](https://codecov.io/github/jonfoong/Rinteract)[![CRAN
@@ -12,20 +14,18 @@ computing hypothesis tests manually.
 ## Installation
 
 ``` r
-
 devtools::install_github("jonfoong/Rinteract")
 ```
 
 ## Overview
 
 Interaction terms are widely used in regression models to uncover
-underlying heterogeneity for a predictor of interest. Despite its
-ubiquity, interpretation of interaction models is often confusing at
-best and inaccurate at worst. In addition, studies with interaction
-terms typically only report estimates from a model output. As pointed
-out by Brambor et al (2006):
+underlying heterogeneity. Despite its ubiquity, the interpretation of
+interaction models is often confusing at best and inaccurate at worst.
+In addition, studies typically only report estimates from a model output
+and neglect their conditional effects. As noted in Brambor et al (2006):
 
-> …typical results table often conveys very little information of
+> …the typical results table often conveys very little information of
 > interest because the analyst is not concerned with model parameters
 > per se; he or she is primarily interested in the marginal effect of X
 > on Y for substantively meaningful values of the conditioning variable
@@ -34,22 +34,31 @@ out by Brambor et al (2006):
 > algebra, the problem is that it is not possible to do the same for the
 > standard errors.
 
-`Rinteract` avoids this by computing all conditional effects in a model
-with interactions. It accepts a model object as input and relies on
-`multcomp` to perform hypothesis testing on all conditions of interest
-(when a variable is at 0, 1, or the mean). It is also capable of
-graphing these effects using tabular ggplots.
+Demeaning variables before estimation partly resolves this issue.
+However, we may also be interested in effect sizes for specific
+conditions beyond just the mean. Consider a hypothetical drug treatment
+for which we are also interested in heterogeneity across genders. We
+estimate a simple model:
 
-Note: As of now the package only accepts `lm`, `glm` and `lm_robust`
-models.
+$$Y = \alpha + \beta*Treat + \gamma*Female + \delta*Treat*Female+\epsilon$$
+
+The estimated parameter $\hat{\delta}$ gives us the difference in
+treatment effect between male and female patients. However, we are also
+interested in the treatment effect conditioning on being a female
+patient, which is given by $\hat{\beta} + \hat{\delta}$. While this
+simple arithmetic can be performed by looking at a regression table,
+uncertainty estimates are not so easily obtained.
+
+`Rinteract` resolves this by computing all conditional effects in a
+model with interactions. It accepts a model object as input and relies
+on `multcomp` to perform hypothesis testing on all conditions of
+interest (when a variable is at 0, 1, or the mean). It is also capable
+of graphing these effects using tabular ggplots.
 
 ## Usage
 
 ``` r
-library(Rinteract)
-library(kableExtra)
-
-mod <- lm(Y~X1*X2*X3, toydata)
+mod <- lm(Y~X1*X2*X3*X4, toydata)
 dat <- int_conditions(mod, toydata)
 dat |> 
   head() |>
@@ -62,6 +71,7 @@ dat |>
    <th style="text-align:left;"> X1 </th>
    <th style="text-align:left;"> X2 </th>
    <th style="text-align:left;"> X3 </th>
+   <th style="text-align:left;"> X4 </th>
    <th style="text-align:right;"> estimate </th>
    <th style="text-align:right;"> std.error </th>
    <th style="text-align:right;"> p.value </th>
@@ -73,66 +83,80 @@ dat |>
    <td style="text-align:left;"> effect </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.263 </td>
-   <td style="text-align:right;"> 0.187 </td>
-   <td style="text-align:right;"> 0.161 </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:right;"> -0.301 </td>
+   <td style="text-align:right;"> 0.256 </td>
+   <td style="text-align:right;"> 0.241 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
    <td style="text-align:left;"> effect </td>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.177 </td>
-   <td style="text-align:right;"> 0.130 </td>
-   <td style="text-align:right;"> 0.174 </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:right;"> -0.235 </td>
+   <td style="text-align:right;"> 0.184 </td>
+   <td style="text-align:right;"> 0.202 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
    <td style="text-align:left;"> effect </td>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.090 </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:right;"> -0.168 </td>
+   <td style="text-align:right;"> 0.264 </td>
+   <td style="text-align:right;"> 0.526 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> all </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:right;"> -0.265 </td>
    <td style="text-align:right;"> 0.181 </td>
-   <td style="text-align:right;"> 0.619 </td>
-   <td style="text-align:left;"> Causal effect </td>
-  </tr>
-  <tr>
-   <td style="text-align:left;"> effect </td>
-   <td style="text-align:left;"> 0 </td>
-   <td style="text-align:left;"> all </td>
-   <td style="text-align:right;"> -0.177 </td>
-   <td style="text-align:right;"> 0.127 </td>
-   <td style="text-align:right;"> 0.166 </td>
+   <td style="text-align:right;"> 0.145 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
    <td style="text-align:left;"> effect </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 1 </td>
-   <td style="text-align:right;"> -0.096 </td>
-   <td style="text-align:right;"> 0.174 </td>
-   <td style="text-align:right;"> 0.579 </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:right;"> -0.231 </td>
+   <td style="text-align:right;"> 0.256 </td>
+   <td style="text-align:right;"> 0.367 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
    <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> all </td>
-   <td style="text-align:left;"> all </td>
-   <td style="text-align:right;"> -0.030 </td>
-   <td style="text-align:right;"> 0.091 </td>
-   <td style="text-align:right;"> 0.739 </td>
+   <td style="text-align:right;"> -0.268 </td>
+   <td style="text-align:right;"> 0.188 </td>
+   <td style="text-align:right;"> 0.154 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
 </tbody>
 </table>
 
-We can then graph the result:
+We can then graph the result. `int_graph` returns a ggplot object that
+can be further manipulated.
 
 ``` r
-library(ggplot2)
-
-int_graph(dat, X1~X2+X3) +
-  ggtitle("all cond effects")
+int_graph(dat, X1+X2~X3+X4, digits = 2) +
+  ggtitle("All conditional means and effects from a four-way interaction")
 ```
 
 ![](vignettes/vignette-unnamed-chunk-3-1.png)
+
+------------------------------------------------------------------------
+
+Note: As of now the package only accepts `lm`, `glm` and `lm_robust`
+models. `int_graph` also only takes up to four-way interactions as of
+yet; for clarity we do not recommended going higher than this. One way
+to visualise five or higher way interactions is to choose up to four
+variables to plot, and then keep values for all other variables fixed
+before feeding into `int_graph`.
