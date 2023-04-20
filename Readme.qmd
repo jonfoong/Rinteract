@@ -2,7 +2,10 @@
 format: gfm
 ---
 
-```{r, echo = FALSE}
+```{r}
+#| echo: false
+#| warning: false
+
 knitr::opts_chunk$set(
   collapse = TRUE,
   eval = TRUE,
