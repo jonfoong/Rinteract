@@ -39,7 +39,7 @@ int_graph(
 \item{alpha_l}{The alpha level for the level panels. Defaults to 1.}
 }
 \value{
-A ggplot object that plots all conditional means and effects from the output of `int_conditions`
+A ggplot object that plots all conditional means and effects from the output of `int_conditions`. Values in red are negative estimates while bold represents estimates with p<0.05.
 }
 \description{
 Wrapper around ggplot that graphs all conditional means and effects from the output of `int_conditions`
