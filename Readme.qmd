@@ -39,7 +39,10 @@ Interaction terms are widely used in regression models to uncover underlying het
 
 Demeaning variables before estimation partly resolves this issue. However, we may also be interested in effect sizes for specific conditions beyond just the mean. Consider a hypothetical drug treatment for which we are also interested in heterogeneity across genders. We estimate a simple model:
 
-$Y = \alpha + \beta Treat + \gamma Female + \delta Treat Female+\epsilon$
+<p style="text-align: center;">Centered text</p>
+
+<center>$Y = \alpha + \beta*Treat + \gamma*Female + \delta*Treat*Female+\epsilon$</center>
+
 
 The estimated parameter $\hat{\delta}$ gives us the difference in treatment effect between male and female patients. However, we are also interested in the treatment effect conditioning on being a female patient, which is given by $\hat{\beta} + \hat{\delta}$. While this simple arithmetic can be performed by looking at a regression table, uncertainty estimates are not so easily obtained. 
 
