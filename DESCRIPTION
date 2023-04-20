@@ -11,7 +11,9 @@ Depends:
     R (>= 4.2.2)
 Imports:
     multcomp (>= 1.4-23),
-    broom (>= 1.0.4)
+    broom (>= 1.0.4),
+    ggplot2 (>= 3.4.1),
+    ggh4x (>= 0.2.3)
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.2.3
