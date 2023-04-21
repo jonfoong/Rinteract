@@ -55,7 +55,8 @@ We use the xx dataset to illustrate our example. By default, int_conditions take
 
 ```{r}
 mod <- lm(Y~X1*X2*X3*X4, toydata)
-dat <- int_conditions(mod, toydata)
+dat <- int_conditions(mod, toydata,
+                      zero_con = c(X3 = 5, X4 = 18))
 dat |> 
   head() |>
   kable(digits = 3)

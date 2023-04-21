@@ -14,6 +14,8 @@
 #'
 #' @return A ggplot object that plots all conditional means and effects from the output of `int_conditions`. Values in red are negative estimates while bold represents estimates with p<0.05.
 #' @examples
+#' library(ggplot2)
+#'
 #' set.seed(1)
 #' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE), X3 = sample(0:1, 100, replace=TRUE))
 #' dat <- dat |> transform(Y = X1 + 2*X2 + 3*X1*X2*X3 + rnorm(1))

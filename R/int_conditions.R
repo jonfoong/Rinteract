@@ -4,6 +4,7 @@
 #' @param mod A model object
 #' @param data Dataset used when fitting model
 #' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
+#' @param zero_con By default the function returns conditional effects for the 0, 1, and mean (all) conditions. However you can also specify alternative values other than 0 to replace the zero condition. Must be a list of named integers where name corresponds to a variable name in the model. Variables whose names are not supplied automatically default to 0.
 #' @param .names A named vector for renaming variables
 #' @param pred_vars int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. Defaults to 0 for all non-interaction variables.
 #' @param fixef Are there fixed effects within the model? If so these must be supplied in order for predictions to be generated. The argument takes a list of named factors and generates predictions across the mean of all combinations of fixed effects.
@@ -25,6 +26,7 @@
 int_conditions <- function(mod,
                            data = NULL,
                            main_vars = NULL,
+                           zero_con = 0,
                            .names = NULL, # takes a named vector; if specified, renames variables of model
                            pred_vars = NULL,
                            fixef = NULL, # takes a list of named factors of fixed effects and their levels
@@ -109,6 +111,18 @@ int_conditions <- function(mod,
 
     })
 
+  # set zero conditions for later
+
+  if (all(zero_con==0)){
+    zero_con <- setNames(rep(0, length(main_vars)), main_vars)
+
+  } else {
+
+    zero_vars <- setdiff(main_vars, names(zero_con))
+    zero_con <- c(setNames(rep(0, length(zero_vars)), zero_vars), zero_con)
+
+  }
+
   # now extract coeffs and perform hypothesis testing
 
   cond_effs <-
@@ -116,7 +130,7 @@ int_conditions <- function(mod,
 
       dat <- df_effects[x,]
 
-      # extract all marginal terms
+      # extract all effect terms
 
       form_terms <-
         colnames(dat)[apply(dat==1, 2, all)]
@@ -128,6 +142,18 @@ int_conditions <- function(mod,
 
       marg_terms <-
         setdiff(unique(strsplit_vec(form_terms, ":")), main_terms)
+
+      # add misc terms for when zero con !=0
+
+      misc_terms <- setdiff(main_vars,
+                            c(main_terms, marg_terms, names(zero_con)[zero_con==0]))
+
+      # remove conditions for which misc term is 0
+
+      all_terms <- sapply(colnames(dat), strsplit_vec, ":")
+
+      misc_terms <- colnames(dat)[all_terms %in%
+                                    lapply(misc_terms, function(x) c(main_terms, x))]
 
       #create a grid of main terms first
 
@@ -148,10 +174,21 @@ int_conditions <- function(mod,
 
       }
 
+      #indicate which variables are mean
+
+      grid <- callapply("rbind", 1:nrow(grid), function(x){
+        if (nrow(grid)==1) grid_df <- grid else grid_df <- grid[x,]
+        mean_vars <- paste(colnames(grid)[grid_df==0.5], collapse = ",")
+        transform(grid_df, mean_vars = mean_vars)
+      })
+
       # demean, replace 0.5 with means
 
-      hyp_grid <- callapply("cbind", colnames(grid),
-                            function(x) ifelse(grid[x]==0.5, mean(data[[x]]), 1))
+      for (i in c(main_terms, marg_terms))
+        grid[i][grid[i]==0.5] <- mean(data[[i]])
+
+      hyp_grid <- cbind(grid,
+                        t(zero_con[setdiff(main_vars, colnames(grid))]))
 
       # now create df of all hypotheses we have to test incl formula
 
@@ -162,13 +199,16 @@ int_conditions <- function(mod,
 
           for (i in colnames(grid_row)) assign(i, grid_row[[i]])
 
-          form <- paste0(paste(sapply(form_terms, function(x){
+          form <- paste0(paste(
 
-            val <- eval(parse(text = gsub("\\:", "\\*", x)))
+            sapply(c(form_terms, misc_terms), function(x){
 
-            sprintf("%s*%s", val, x)
-          }),
-          collapse = " + "), " = 0")
+              val <- eval(parse(text = gsub("\\:", "\\*", x)))
+
+              sprintf("%s*%s", val, x)
+            }),
+
+            collapse = " + "), " = 0")
 
           transform(grid_row, form = form)
 
@@ -181,51 +221,27 @@ int_conditions <- function(mod,
 
           dat_hyp <- hyp_tests[x,]
 
+          mean_vars <- strsplit_vec(dat_hyp$mean_vars, ",")
 
           #run linear hypothesis using formula
 
-          test <- broom::tidy(glht(mod, dat_hyp$form))[c("estimate", "std.error", "adj.p.value")]
+          test <- broom::tidy(multcomp::glht(mod, dat_hyp$form))[c("estimate", "std.error", "adj.p.value")]
 
           colnames(test) <- c("estimate", "std.error", "p.value")
 
           # extract all conditions
 
-          # get conditions for when x=1 or mean
+          cons <- dat_hyp[,setdiff(colnames(dat_hyp), c("form", "mean_vars"))]
 
-          remn <- dat_hyp[!colnames(dat_hyp) %in% c("form", strsplit_vec(dat$term, ":"))]
-
-          if(length(remn)!=0)
-            remn <- sapply(colnames(remn),
-                           function(x) paste(x, "=", ifelse(remn[x] %in% 0:1, remn[x] , "'all'")))
-
-          # write test here to check for length of con_mean!
-
-          con_mean <-
-            unique(c(remn, paste(strsplit_vec(dat$term, ":"), "=1")))
-
-          con_mean <-
-            eval(parse(text = paste0("data.frame(",
-                                     paste(con_mean, collapse=","), ")")))
-          # get all zero conditions
-
-          zero_names <-
-            setdiff(main_vars, names(con_mean))
-
-          con_zero <-
-            matrix(0, 1, length(zero_names))
-
-          colnames(con_zero) <- zero_names
-
-          conditions <-
-            cbind(con_mean, con_zero)
+          for (i in mean_vars) cons[i] <- "all"
 
           # build dataframe
 
-          conditions$effect <- dat$term
+          cons$effect <- dat$term
 
-          conditions <- cbind(conditions, test)
+          cons <- cbind(cons, test)
 
-          return(conditions)
+          return(cons)
 
         })
     })
