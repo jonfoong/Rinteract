@@ -184,7 +184,7 @@ int_conditions <- function(mod,
 
           #run linear hypothesis using formula
 
-          test <- tidy(glht(mod, dat_hyp$form))[c("estimate", "std.error", "adj.p.value")]
+          test <- broom::tidy(glht(mod, dat_hyp$form))[c("estimate", "std.error", "adj.p.value")]
 
           colnames(test) <- c("estimate", "std.error", "p.value")
 
