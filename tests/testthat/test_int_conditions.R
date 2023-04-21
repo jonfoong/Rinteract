@@ -2,6 +2,7 @@ library(testthat)
 library(Rinteract)
 library(estimatr)
 library(dplyr)
+library(plm)
 
 
 # test different models
