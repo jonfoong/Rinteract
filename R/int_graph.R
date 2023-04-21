@@ -16,7 +16,7 @@
 #' @examples
 #' set.seed(1)
 #' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE), X3 = sample(0:1, 100, replace=TRUE))
-#' dat <- dat |> mutate(Y = X1 + 2*X2 + 3*X1*X2*X3 + rnorm(1))
+#' dat <- dat |> transform(Y = X1 + 2*X2 + 3*X1*X2*X3 + rnorm(1))
 #' mod <- lm(Y~X1*X2*X3, dat)
 #' cond_tab <- int_conditions(mod, data = dat, names = c(A1 = "X1", A2 = "X2", A3 = "X3"))
 #' plot <- int_graph(cond_tab, facet = A1~A2+A3)

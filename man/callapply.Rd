@@ -6,6 +6,13 @@
 \usage{
 callapply(func, x, FUN)
 }
+\arguments{
+\item{func}{A string for a function call to an `lapply` output. Common uses would be "rbind" or "cbind"}
+
+\item{x}{A vector to iterate over for `lapply`}
+
+\item{FUN}{A function supplied to `lapply`}
+}
 \description{
 Wrapper around `do.call` and `lapply`
 }

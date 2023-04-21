@@ -6,6 +6,13 @@
 \usage{
 strsplit_vec(x, split, ...)
 }
+\arguments{
+\item{x}{A string to be split.}
+
+\item{split}{A regexp for the string to be split by.}
+
+\item{...}{Additional arguments passed to `strsplit`}
+}
 \description{
 Wrapper around `strsplit`
 }
