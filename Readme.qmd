@@ -77,7 +77,6 @@ dat |>
 From the first row we see that the effect of being a non-black woman, condition on income and age at zero, is -7.16. Obviously these conditions are of little analytical value. While `int_conditions` also returns mean conditions, we can also specify specific values for our variables to take. 
 
 ```{r}
-#| eval: false
 
 median_inc <- round(median(RandHIE$linc), 3)
 

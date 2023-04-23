@@ -162,6 +162,7 @@ returns mean conditions, we can also specify specific values for our
 variables to take.
 
 ``` r
+
 median_inc <- round(median(RandHIE$linc), 3)
 
 dat <- int_conditions(mod, RandHIE,
@@ -176,6 +177,83 @@ dat |>
   head() |>
   kable(digits = 3)
 ```
+
+<table>
+ <thead>
+  <tr>
+   <th style="text-align:left;"> female </th>
+   <th style="text-align:left;"> black </th>
+   <th style="text-align:left;"> log_income </th>
+   <th style="text-align:left;"> age </th>
+   <th style="text-align:right;"> estimate </th>
+   <th style="text-align:right;"> std.error </th>
+   <th style="text-align:right;"> p.value </th>
+   <th style="text-align:left;"> value </th>
+  </tr>
+ </thead>
+<tbody>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 8.984 </td>
+   <td style="text-align:left;"> 50 </td>
+   <td style="text-align:right;"> -0.340 </td>
+   <td style="text-align:right;"> 7.809 </td>
+   <td style="text-align:right;"> 0.965 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> all </td>
+   <td style="text-align:left;"> 8.984 </td>
+   <td style="text-align:left;"> 50 </td>
+   <td style="text-align:right;"> -0.705 </td>
+   <td style="text-align:right;"> 8.505 </td>
+   <td style="text-align:right;"> 0.934 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 8.984 </td>
+   <td style="text-align:left;"> 50 </td>
+   <td style="text-align:right;"> -2.353 </td>
+   <td style="text-align:right;"> 12.096 </td>
+   <td style="text-align:right;"> 0.846 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> all </td>
+   <td style="text-align:left;"> 50 </td>
+   <td style="text-align:right;"> -0.538 </td>
+   <td style="text-align:right;"> 7.694 </td>
+   <td style="text-align:right;"> 0.944 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 1 </td>
+   <td style="text-align:left;"> 50 </td>
+   <td style="text-align:right;"> -6.087 </td>
+   <td style="text-align:right;"> 5.029 </td>
+   <td style="text-align:right;"> 0.226 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+  <tr>
+   <td style="text-align:left;"> effect </td>
+   <td style="text-align:left;"> 0 </td>
+   <td style="text-align:left;"> 8.984 </td>
+   <td style="text-align:left;"> all </td>
+   <td style="text-align:right;"> -0.512 </td>
+   <td style="text-align:right;"> 4.026 </td>
+   <td style="text-align:right;"> 0.899 </td>
+   <td style="text-align:left;"> Causal effect </td>
+  </tr>
+</tbody>
+</table>
 
 We can also visualize these effects using a graph. `int_graph` returns a
 tabular ggplot object that can be further manipulated. Values in bold
