@@ -50,11 +50,41 @@ int_graph <-
 
     if(is.null(facet)) stop("facet argument cannot be empty!")
 
+    # get number of variables
+
+    facet_char <- setdiff(as.character(facet), "~")
+
+    lhs <- trimws(strsplit_vec(facet_char[1], "\\+"))[1]
+    rhs <- trimws(strsplit_vec(facet_char[2], "\\+"))[1]
+
+    vars <-
+      trimws(unlist(strsplit(facet_char, "\\+")))
+
+    # which variable to set effect colours
+
+    # if not specified, it is by default the outer facet(s)
+
+    if(is.null(eff_var)) eff_var <- c(rhs, lhs)[grepl("\\+", facet_char)][1]
+    if(length(eff_var)==0) eff_var <- vars[1]
+
+    # now set colours
+
+    names_col_effect <- c("base", "1", "all", "effect")
+
+    eff_var_vals <- unique(data[,eff_var])
+
+    names_col_effect[names_col_effect=="base"] <-
+      setdiff(eff_var_vals, names_col_effect)
+
+    names(col_effect) <- names_col_effect
+
 
     # first round digits
 
     data[,c("estimate", "std.error", "p.value")] <-
       apply(data[,c("estimate", "std.error", "p.value")], 2, function(x) round(x, digits))
+
+    # add some vars for plotting later
 
     data <-
       transform(data,
@@ -64,6 +94,19 @@ int_graph <-
                 y = 1,
                 sign = ifelse(estimate > 0, "pos", "neg"),
                 sig = ifelse(p.value < .05, TRUE, FALSE))
+
+    # factorise all vars
+
+    for (i in vars){
+      vals <- data[,i]
+
+      var_levels <- c(setdiff(unique(vals), names_col_effect[-1]),
+                      names_col_effect[-1])
+
+      data[,i] <- factor(vals, levels = var_levels)
+
+    }
+
 
     # Now set the background
 
@@ -83,32 +126,7 @@ int_graph <-
                                       margin = margin(5, 5, 5, 5))
       )
 
-    # get number of variables
-
-    facet_char <- setdiff(as.character(facet), "~")
-
-    lhs <- trimws(strsplit_vec(facet_char[1], "\\+"))[1]
-    rhs <- trimws(strsplit_vec(facet_char[2], "\\+"))[1]
-
-    vars <-
-      trimws(unlist(strsplit(facet_char, "\\+")))
-
-    # Now plot for different var lengths
-
-    # first get color palette for effects
-
-    if(length(col_effect)==1) col_effect <- rep(col_effect, 4)
-
-    names(col_effect) <- c("0", "1", "all", "effect")
-
-    # which variable to set effect colours
-
-    # if not specified, it is by default the outer facet(s)
-
-    if(is.null(eff_var)) eff_var <- c(rhs, lhs)[grepl("\\+", facet_char)][1]
-    if(length(eff_var)==0) eff_var <- vars[1]
-
-    p +
+    p <- p +
       # first fill with effect colors
       geom_rect(aes(fill = eval(parse(text = eff_var))), xmin = -Inf, xmax = Inf,
                 ymin = -Inf, ymax = Inf, alpha = alpha_e) +
@@ -118,7 +136,7 @@ int_graph <-
       geom_rect(data = subset(data, value=="Level"), fill = col_level, xmin = -Inf, xmax = Inf,
                 ymin = -Inf, ymax = Inf, alpha = alpha_l) +
 
-    # now add colors for signs and significance
+      # now add colors for signs and significance
       geom_text(aes(color = sign,
                     fontface = ifelse(sig, 2, 1))) +
       scale_color_manual(values = c("pos" = "black", "neg" = "red"))

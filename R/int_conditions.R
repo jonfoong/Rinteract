@@ -267,11 +267,15 @@ int_conditions <- function(mod,
     # first get all permutations
 
     all_pred <-
-      callapply("expand.grid", main_vars, function(x) c(0, 1, "all"))
+      callapply("expand.grid", main_vars, function(x) c("base", 1, "all"))
 
     all_pred <- as.data.frame(apply(all_pred, 2, as.character))
 
     colnames(all_pred) <- main_vars
+
+    # maybe write fn for this?
+
+    for (i in main_vars) all_pred[all_pred[,i]=="base",i] <- zero_con[i]
 
     # get means
 
