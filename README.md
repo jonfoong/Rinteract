@@ -47,17 +47,32 @@ patient, which is given by $\hat{\beta} + \hat{\delta}$. While this
 simple arithmetic can be performed by looking at a regression table,
 uncertainty estimates are not so easily obtained.
 
-`Rinteract` resolves this by computing all conditional effects in a
+`Rinteract` facilitates this by computing all conditional effects in a
 model with interactions. It accepts a model object as input and relies
 on `multcomp` to perform hypothesis testing on all conditions of
-interest (when a variable is at 0, 1, or the mean). It is also capable
-of graphing these effects using tabular ggplots.
+interest. It also provides functionality for graphing these effects via
+tabular ggplots that can be further manipulated.
 
 ## Usage
 
+We use data from the Rand Health Insurance Experiment from the
+`sampleSelection` package to illustrate an example. By default,
+int_conditions takes a fitted model and returns all effects in the 0, 1,
+and mean condition for all variables.
+
 ``` r
-mod <- lm(Y~X1*X2*X3*X4, toydata)
-dat <- int_conditions(mod, toydata)
+data("RandHIE")
+
+mod <- lm_robust(xghindx~female*black*linc*xage, RandHIE, 
+                 fixed_effects = ~year, se_type = "stata")
+
+dat <- int_conditions(mod, RandHIE,
+                      fixef = list(year = factor(unique(RandHIE$year))),
+                      .names = c(female = "female",
+                                 black = "black",
+                                 log_income = "linc",
+                                 age = "xage"))
+
 dat |> 
   head() |>
   kable(digits = 3)
@@ -66,10 +81,10 @@ dat |>
 <table>
  <thead>
   <tr>
-   <th style="text-align:left;"> X1 </th>
-   <th style="text-align:left;"> X2 </th>
-   <th style="text-align:left;"> X3 </th>
-   <th style="text-align:left;"> X4 </th>
+   <th style="text-align:left;"> female </th>
+   <th style="text-align:left;"> black </th>
+   <th style="text-align:left;"> log_income </th>
+   <th style="text-align:left;"> age </th>
    <th style="text-align:right;"> estimate </th>
    <th style="text-align:right;"> std.error </th>
    <th style="text-align:right;"> p.value </th>
@@ -82,9 +97,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.301 </td>
-   <td style="text-align:right;"> 0.256 </td>
-   <td style="text-align:right;"> 0.241 </td>
+   <td style="text-align:right;"> -7.162 </td>
+   <td style="text-align:right;"> 4.515 </td>
+   <td style="text-align:right;"> 0.113 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -92,9 +107,9 @@ dat |>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.235 </td>
-   <td style="text-align:right;"> 0.184 </td>
-   <td style="text-align:right;"> 0.202 </td>
+   <td style="text-align:right;"> -7.528 </td>
+   <td style="text-align:right;"> 3.737 </td>
+   <td style="text-align:right;"> 0.044 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -102,9 +117,9 @@ dat |>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.168 </td>
-   <td style="text-align:right;"> 0.264 </td>
-   <td style="text-align:right;"> 0.526 </td>
+   <td style="text-align:right;"> -9.176 </td>
+   <td style="text-align:right;"> 2.793 </td>
+   <td style="text-align:right;"> 0.001 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -112,9 +127,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.265 </td>
-   <td style="text-align:right;"> 0.181 </td>
-   <td style="text-align:right;"> 0.145 </td>
+   <td style="text-align:right;"> -0.893 </td>
+   <td style="text-align:right;"> 0.418 </td>
+   <td style="text-align:right;"> 0.033 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -122,9 +137,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.231 </td>
-   <td style="text-align:right;"> 0.256 </td>
-   <td style="text-align:right;"> 0.367 </td>
+   <td style="text-align:right;"> -6.442 </td>
+   <td style="text-align:right;"> 4.014 </td>
+   <td style="text-align:right;"> 0.108 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -132,23 +147,46 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> all </td>
-   <td style="text-align:right;"> -0.268 </td>
-   <td style="text-align:right;"> 0.188 </td>
-   <td style="text-align:right;"> 0.154 </td>
+   <td style="text-align:right;"> -6.980 </td>
+   <td style="text-align:right;"> 2.557 </td>
+   <td style="text-align:right;"> 0.006 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
 </tbody>
 </table>
 
-We can then graph the result. `int_graph` returns a ggplot object that
-can be further manipulated.
+From the first row we see that the effect of being a non-black woman,
+condition on income and age at zero, is -7.16. Obviously these
+conditions are of little analytical value. While `int_conditions` also
+returns mean conditions, we can also specify specific values for our
+variables to take.
 
 ``` r
-int_graph(dat, X1+X2~X3+X4, digits = 2) +
+median_inc <- round(median(RandHIE$linc), 3)
+
+dat <- int_conditions(mod, RandHIE,
+                      zero_con = c(xage = 50,
+                                   linc = median_inc),
+                      fixef = list(year = factor(unique(RandHIE$year))),
+                      .names = c(female = "female",
+                                 black = "black",
+                                 log_income = "linc",
+                                 age = "xage"))
+dat |> 
+  head() |>
+  kable(digits = 3)
+```
+
+We can also visualize these effects using a graph. `int_graph` returns a
+tabular ggplot object that can be further manipulated. Values in bold
+correspond to estimates with p-values \<0.05.
+
+``` r
+int_graph(dat, black+female~log_income+age, digits = 2) +
   ggtitle("All conditional means and effects from a four-way interaction")
 ```
 
-![](vignettes/vignette-unnamed-chunk-3-1.png)
+![](vignettes/vignette-unnamed-chunk-4-1.png)
 
 ------------------------------------------------------------------------
 
