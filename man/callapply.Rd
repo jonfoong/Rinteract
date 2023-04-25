@@ -4,7 +4,7 @@
 \alias{callapply}
 \title{specifying function call to lapply output}
 \usage{
-callapply(func, x, FUN)
+callapply(func, x, FUN, ...)
 }
 \arguments{
 \item{func}{A string for a function call to an `lapply` output. Common uses would be "rbind" or "cbind"}

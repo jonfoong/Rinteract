@@ -96,15 +96,25 @@ int_conditions <- function(mod,
       mat <- df_mat[x,]
 
       new_mat <-
-        sapply(vars,
-               function(y){
+        sapply(vars, function(y){
 
-                 vec <- strsplit_vec(mat[[y]], ":")
+          vec <- strsplit_vec(mat[[y]], ":")
+          terms <- strsplit_vec(df$term, ":")
+          marginals <- setdiff(strsplit_vec(df$marginal, ":"),
+                               terms)
 
-                 ifelse(all(vec %in% strsplit_vec(df$marginal, ":")) &
-                          all(strsplit_vec(df$term, ":") %in% vec),
-                        1, 0)
-               })
+          if (length(marginals)>0){
+
+          marginals <- lapply(marginals, c, terms)
+          } else{
+            marginals <- list(terms)
+          }
+
+          ifelse(any(sapply(seq_along(marginals),
+                            function(x) all(vec %in% unlist(marginals[x])))) &
+                   all(terms %in% vec),
+                 1, 0)
+        })
 
       new_df <- cbind(df, rbind(new_mat))
       return(new_df)
@@ -146,14 +156,33 @@ int_conditions <- function(mod,
       # add misc terms for when zero con !=0
 
       misc_terms <- setdiff(main_vars,
-                            c(main_terms, marg_terms, names(zero_con)[zero_con==0]))
+                            c(main_terms, marg_terms,
+                              names(zero_con)[zero_con==0]))
 
       # remove conditions for which misc term is 0
 
-      all_terms <- sapply(colnames(dat), strsplit_vec, ":")
+      all_terms <- callapply("rbind", colnames(dat), function(x){
 
-      misc_terms <- colnames(dat)[all_terms %in%
-                                    lapply(misc_terms, function(x) c(main_terms, x))]
+        vars <- strsplit_vec(x, ":")
+        reps <- length(main_vars)-length(vars)
+        c(vars, rep(NA, reps))
+
+      })
+
+      misc_terms <-
+        sapply(misc_terms, function(y){
+
+          vars <- c(main_terms, y)
+
+          ind <- sapply(1:nrow(all_terms), function(x){
+
+            all(vars %in% all_terms[x,] &
+                  all_terms[x,] %in% vars)
+          })
+
+          colnames(dat)[ind]
+
+        })
 
       #create a grid of main terms first
 
@@ -177,9 +206,13 @@ int_conditions <- function(mod,
       #indicate which variables are mean
 
       grid <- callapply("rbind", 1:nrow(grid), function(x){
+
         if (nrow(grid)==1) grid_df <- grid else grid_df <- grid[x,]
+
         mean_vars <- paste(colnames(grid)[grid_df==0.5], collapse = ",")
+
         transform(grid_df, mean_vars = mean_vars)
+
       })
 
       # demean, replace 0.5 with means

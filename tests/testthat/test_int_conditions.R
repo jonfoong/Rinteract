@@ -59,7 +59,59 @@ test_that("fixef works", {
   expect_s3_class(out, "data.frame")
 })
 
+# test that all estimates are correct
 
+test_that("all estimates from output correct", {
+  data <- toydata
+  mod <- lm_robust(Y~X1*X2*X3*X4, data)
+  out <- int_conditions(mod, data, conmeans = FALSE)
+  terms <- names(coef(mod))[-1]
+  coef_df <- as.data.frame(t(mod$coefficients))
+
+  checks <- sapply(1:nrow(out), function(x){
+
+    df <- out[x,]
+    estimate <- df$estimate
+    vars <- setdiff(colnames(df),
+                    c("estimate", "std.error", "p.value", "value"))
+
+    eff_vars <- colnames(df)[df=="effect"]
+    con_vars <- setdiff(vars, eff_vars)
+
+    effect <- paste0("`", terms[ind_fn(terms, eff_vars)], "`")
+
+    con_effect <- unlist(sapply(con_vars, function(y){
+
+      eff <- df[[y]]
+
+      full_term <- c(y, eff_vars)
+
+      full_term <- terms[ind_fn(terms, full_term)]
+
+      if (eff!=0){
+
+        value <- as.character(ifelse(eff=="all",
+                        mean(data[[y]], na.rm=TRUE),
+                        eff))
+        sprintf("%s*`%s`", value, full_term)
+
+      }
+
+    }))
+
+    if (is.null(con_effect)){
+      form <- effect
+    } else {
+      form <- paste(c(effect, paste(con_effect, collapse = "+")), collapse = "+")
+    }
+
+    value <- transform(coef_df, value = eval(parse(text = form)))[["value"]]
+    value==estimate
+  })
+
+  expect_true(all(checks))
+
+})
 
 
 

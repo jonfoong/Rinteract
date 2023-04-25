@@ -7,7 +7,7 @@
 
 
 callapply <-
-  function(func, x, FUN){
-    df <- do.call(func, lapply(x, FUN))
+  function(func, x, FUN, ...){
+    df <- do.call(func, lapply(x, FUN, ...))
     as.data.frame(df)
   }
