@@ -78,7 +78,7 @@ test_that("all estimates from output correct", {
     eff_vars <- colnames(df)[df=="effect"]
     con_vars <- setdiff(vars, eff_vars)
 
-    effect <- paste0("`", terms[ind_fn(terms, eff_vars)], "`")
+    effect <- paste0("`", terms[Rinteract:::ind_fn(terms, eff_vars)], "`")
 
     con_effect <- unlist(sapply(con_vars, function(y){
 
@@ -86,7 +86,7 @@ test_that("all estimates from output correct", {
 
       full_term <- c(y, eff_vars)
 
-      full_term <- terms[ind_fn(terms, full_term)]
+      full_term <- terms[Rinteract:::ind_fn(terms, full_term)]
 
       if (eff!=0){
 
