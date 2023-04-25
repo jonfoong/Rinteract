@@ -176,8 +176,10 @@ int_conditions <- function(mod,
 
           ind <- sapply(1:nrow(all_terms), function(x){
 
-            all(vars %in% all_terms[x,] &
-                  all_terms[x,] %in% vars)
+            vec <- all_terms[x,][!is.na(all_terms[x,])]
+
+            all(c(all(vars %in% vec), all(vec %in% vars)))
+
           })
 
           colnames(dat)[ind]
