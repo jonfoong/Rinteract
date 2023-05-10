@@ -95,20 +95,23 @@ int_conditions <- function(mod,
       df <- df_effects[x,]
       mat <- df_mat[x,]
 
+      terms <- strsplit_vec(df$term, ":")
+      marginals <- setdiff(strsplit_vec(df$marginal, ":"),
+                           terms)
+
+      if (length(marginals)>0){
+
+        marginals <- do.call(c, lapply(1:length(marginals),
+                                       function(x) combn(marginals, x, FUN = function(x) list(c(terms, x)))))
+
+      } else{
+        marginals <- list(terms)
+      }
+
       new_mat <-
         sapply(vars, function(y){
 
           vec <- strsplit_vec(mat[[y]], ":")
-          terms <- strsplit_vec(df$term, ":")
-          marginals <- setdiff(strsplit_vec(df$marginal, ":"),
-                               terms)
-
-          if (length(marginals)>0){
-
-          marginals <- lapply(marginals, c, terms)
-          } else{
-            marginals <- list(terms)
-          }
 
           ifelse(any(sapply(seq_along(marginals),
                             function(x) all(vec %in% unlist(marginals[x])))) &
