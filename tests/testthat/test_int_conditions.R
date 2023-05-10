@@ -71,7 +71,6 @@ test_that("all estimates from output correct", {
   checks <- sapply(1:nrow(out), function(x){
 
     df <- out[x,]
-    estimate <- df$estimate
     vars <- setdiff(colnames(df),
                     c("estimate", "std.error", "p.value", "value"))
 
@@ -106,16 +105,11 @@ test_that("all estimates from output correct", {
     }
 
     value <- transform(coef_df, value = eval(parse(text = form)))[["value"]]
-    value==estimate
+    return(value)
   })
 
-  #expect_null(out[!checks,])
-
-  #expect_gt(sum(checks), 174)
-
-  #expect_true(all(checks))
-
-  expect_no_match(paste(which(!checks), collapse = ", "), ".+")
+  expect_no_match(paste(which(checks!=out$estimate), collapse = ", "), ".+")
+  #expect_no_match(paste(checks[checks!=out$estimate], collapse = ", "), ".+")
 
 })
 
