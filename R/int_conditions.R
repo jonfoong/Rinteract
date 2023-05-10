@@ -223,7 +223,7 @@ int_conditions <- function(mod,
       # demean, replace 0.5 with means
 
       for (i in c(main_terms, marg_terms))
-        grid[i][grid[i]==0.5] <- mean(data[[i]])
+        grid[i][grid[i]==0.5] <- mean(data[[i]], na.rm = TRUE)
 
       hyp_grid <- cbind(grid,
                         t(zero_con[setdiff(main_vars, colnames(grid))]))
@@ -321,7 +321,7 @@ int_conditions <- function(mod,
 
     df_pred <- all_pred
 
-    for(i in colnames(df_pred)) df_pred[df_pred[i]=="all", i] <- mean(data[[i]])
+    for(i in colnames(df_pred)) df_pred[df_pred[i]=="all", i] <- mean(data[[i]], na.rm=TRUE)
 
     df_pred <- as.data.frame(apply(df_pred, 2, as.numeric))
 
@@ -359,7 +359,7 @@ int_conditions <- function(mod,
           predict(mod, cbind(df_pred, fixef_df))
         })
 
-      preds <- apply(preds, 2, mean)
+      preds <- apply(preds, 2, mean, na.rm=TRUE)
 
     } else preds <- predict(mod, df_pred)
 
