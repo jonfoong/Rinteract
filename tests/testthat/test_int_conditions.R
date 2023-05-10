@@ -63,7 +63,7 @@ test_that("fixef works", {
 
 test_that("all estimates from output correct", {
   data <- toydata
-  mod <- lm_robust(Y~X1*X2*X3*X4, data)
+  mod <- lm(Y~X1*X2*X3*X4, data)
   out <- int_conditions(mod, data, conmeans = FALSE)
   terms <- names(coef(mod))[-1]
   coef_df <- as.data.frame(t(mod$coefficients))

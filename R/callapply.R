@@ -4,6 +4,7 @@
 #' @param func A string for a function call to an `lapply` output. Common uses would be "rbind" or "cbind"
 #' @param x A vector to iterate over for `lapply`
 #' @param FUN A function supplied to `lapply`
+#' @param ... Other arguments passed to `lapply`
 
 
 callapply <-

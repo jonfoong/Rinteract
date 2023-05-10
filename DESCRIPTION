@@ -8,7 +8,7 @@ Description: Rinteract makes it easy to generate and display all conditional eff
     with interaction terms instead of computing hypothesis tests manually. 
 License: GPL-3
 Depends: 
-    R (>= 4.2.2)
+    R (>= 4.2.0)
 Imports:
     multcomp (>= 1.4-23),
     broom (>= 1.0.4),

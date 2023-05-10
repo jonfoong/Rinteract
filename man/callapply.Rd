@@ -12,6 +12,8 @@ callapply(func, x, FUN, ...)
 \item{x}{A vector to iterate over for `lapply`}
 
 \item{FUN}{A function supplied to `lapply`}
+
+\item{...}{Other arguments passed to `lapply`}
 }
 \description{
 Wrapper around `do.call` and `lapply`
