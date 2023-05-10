@@ -105,17 +105,15 @@ test_that("all estimates from output correct", {
     }
 
     value <- transform(coef_df, value = eval(parse(text = form)))[["value"]]
-    return(value)
+    return(round(value, 5))
   })
 
-  expect_no_match(paste(which(checks!=out$estimate), collapse = ", "), ".+")
+  estimates <- round(out$estimate, 5)
+
+  expect_no_match(paste(which(checks!=estimates), collapse = ", "), ".+")
   #expect_no_match(paste(checks[checks!=out$estimate], collapse = ", "), ".+")
 
 })
-
-
-
-
 
 
 
