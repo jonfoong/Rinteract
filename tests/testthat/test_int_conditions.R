@@ -108,10 +108,12 @@ test_that("all estimates from output correct", {
     return(value)
   })
 
-  expect_no_match(paste(which(checks!=out$estimate), collapse = ", "), ".+")
-  #expect_no_match(paste(checks[checks!=out$estimate], collapse = ", "), ".+")
+  #expect_no_match(paste(which(checks!=out$estimate), collapse = ", "), ".+")
+  expect_no_match(paste(checks[checks!=out$estimate], collapse = ", "), ".+")
 
 })
+
+out[as.numeric(strsplit_vec("35, 36, 38, 47, 48, 52, 62, 64, 74, 76, 78, 93, 94, 107, 108, 151, 159", ",")),]
 
 
 
