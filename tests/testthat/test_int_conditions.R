@@ -109,11 +109,17 @@ test_that("all estimates from output correct", {
     value==estimate
   })
 
-  expect_gt(sum(checks), 174)
+  #expect_null(out[!checks,])
+
+  #expect_gt(sum(checks), 174)
 
   #expect_true(all(checks))
 
+  expect_no_match(paste(which(!checks), collapse = ", "), ".+")
+
 })
+
+
 
 
 
