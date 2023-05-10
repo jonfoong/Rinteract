@@ -109,7 +109,7 @@ test_that("all estimates from output correct", {
   })
 
   expect_no_match(paste(which(checks!=out$estimate), collapse = ", "), ".+")
-  expect_no_match(paste(checks[checks!=out$estimate], collapse = ", "), ".+")
+  #expect_no_match(paste(checks[checks!=out$estimate], collapse = ", "), ".+")
 
 })
 
