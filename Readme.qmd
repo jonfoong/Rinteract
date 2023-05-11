@@ -109,4 +109,4 @@ int_graph(dat, black+female~log_income+age, digits = 2) +
 
 ---
 
-Note: As of now the package only accepts `lm`, `glm` and `lm_robust` models. `int_graph` also only takes up to four-way interactions as of yet; for clarity we do not recommended going higher than this. One way to visualise five or higher way interactions is to choose up to four variables to plot, and then keep values for all other variables fixed before feeding into `int_graph`.
+Note: As of now the package only accepts `lm`, `glm` and `lm_robust` models and numeric variables.`int_graph` also only takes up to four-way interactions as of yet; for clarity I do not recommended going higher than this. One way to visualise five or higher way interactions is to choose up to four variables to plot, and then keep values for all other variables fixed before feeding into `int_graph`.

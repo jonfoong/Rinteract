@@ -326,18 +326,13 @@ int_conditions <- function(mod,
     df_pred <- as.data.frame(apply(df_pred, 2, as.numeric))
 
     # attach unaccounted for variables for prediction
+    # by default, takes average of predicted values across all values of variables
 
     extra_vars <- setdiff(all_vars, unique(df_effects$marginal))
+    extra_vars <- unique(strsplit_vec(extra_vars, ":"))
 
-    if(length(extra_vars)!=0 & is.null(pred_vars)){
-
-      pred_vars <- as.data.frame(matrix(0, 1, length(extra_vars)))
-
-      colnames(pred_vars) <- extra_vars
-    }
-
-    if(length(extra_vars)!=0)
-      df_pred <- cbind(df_pred, pred_vars)
+    if(length(extra_vars)!=0 & is.null(pred_vars))
+      pred_vars <- do.call(expand.grid, lapply(data[extra_vars], unique))
 
     # are there fixed effects? If yes takes average across all fixef levels
 
@@ -347,16 +342,19 @@ int_conditions <- function(mod,
 
       # convert into dataframe and factor
 
-      fixef <- expand.grid(fixef)
+      pred_vars <- do.call(expand.grid,
+                           lapply(c(pred_vars, fixef), unique))
+
+    }
+
+    if(nrow(pred_vars)>0){
 
       preds <-
-        callapply("rbind", 1:nrow(fixef), function(x){
+        callapply("rbind", 1:nrow(pred_vars), function(x){
 
-          fixef_df <- as.data.frame(fixef[x,])
+          pred_df <- as.data.frame(pred_vars[x,])
 
-          colnames(fixef_df) <- names(fixef)
-
-          predict(mod, cbind(df_pred, fixef_df))
+          predict(mod, cbind(df_pred, pred_df))
         })
 
       preds <- apply(preds, 2, mean, na.rm=TRUE)
