@@ -46,8 +46,8 @@ test_that("specify main vars", {
 test_that("specify prediction vars", {
   mod <- lm(Y~X1*X2 + X3*X4, toydata)
   out <- int_conditions(mod, toydata,
-                                 pred_vars = data.frame(X1 = 500, X2 = 6),
-                                 main_vars = c("X3", "X4"))
+                        pred_vars = data.frame(X1 = 500, X2 = 6),
+                        main_vars = c("X3", "X4"))
   expect_s3_class(out, "data.frame")
 })
 
@@ -59,53 +59,70 @@ test_that("fixef works", {
   expect_s3_class(out, "data.frame")
 })
 
-# test that all estimates are correct
+# test that all estimates are correct - testing against manual calculation
+# make sure manual calculation is correct!!
 
 test_that("all estimates from output correct", {
+
   data <- toydata
   mod <- lm(Y~X1*X2*X3*X4, data)
   out <- int_conditions(mod, data, conmeans = FALSE)
   terms <- names(coef(mod))[-1]
   coef_df <- as.data.frame(t(mod$coefficients))
 
+  vars <- setdiff(colnames(out),
+                  c("estimate", "std.error", "p.value", "value"))
+
   checks <- sapply(1:nrow(out), function(x){
 
     df <- out[x,]
-    vars <- setdiff(colnames(df),
-                    c("estimate", "std.error", "p.value", "value"))
+
+    for (i in vars){
+
+      value <- df[[i]]
+
+      value <- ifelse(value=="effect", 1,
+                      ifelse(value=="all", mean(data[[i]], na.rm = TRUE), value))
+
+      assign(i, as.numeric(value))
+
+    }
 
     eff_vars <- colnames(df)[df=="effect"]
-    con_vars <- setdiff(vars, eff_vars)
+    zero_vars <- colnames(df)[df==0]
+    con_vars <- setdiff(vars, c(eff_vars, zero_vars))
 
     effect <- paste0("`", terms[Rinteract:::ind_fn(terms, eff_vars)], "`")
 
-    con_effect <- unlist(sapply(con_vars, function(y){
+    if (length(con_vars)==0){
 
-      eff <- df[[y]]
-
-      full_term <- c(y, eff_vars)
-
-      full_term <- terms[Rinteract:::ind_fn(terms, full_term)]
-
-      if (eff!=0){
-
-        value <- as.character(ifelse(eff=="all",
-                        mean(data[[y]], na.rm=TRUE),
-                        eff))
-        sprintf("%s*`%s`", value, full_term)
-
-      }
-
-    }))
-
-    if (is.null(con_effect)){
       form <- effect
+
     } else {
+      con_vars <-
+        do.call(c, lapply(1:length(con_vars),
+                          function(x) combn(con_vars, x, FUN = function(x) list(c(eff_vars, x)))))
+
+      con_effect <- unlist(sapply(con_vars, function(y){
+
+        vars <- unlist(y)
+
+        full_term <- terms[Rinteract:::ind_fn(terms, vars)]
+
+        value <- eval(parse(text = paste(vars, collapse = "*")))
+
+        sprintf("%f*`%s`", value, full_term)
+
+      }))
+
       form <- paste(c(effect, paste(con_effect, collapse = "+")), collapse = "+")
+
     }
 
     value <- transform(coef_df, value = eval(parse(text = form)))[["value"]]
+
     return(round(value, 5))
+
   })
 
   estimates <- round(out$estimate, 5)
@@ -115,4 +132,47 @@ test_that("all estimates from output correct", {
 
 })
 
+test_that("all output estimates match demeaned regression", {
 
+
+  data <- toydata
+  mod <- lm(Y~X1*X2*X3*X4, data)
+  out <- int_conditions(mod, data, conmeans = FALSE)
+  vars <- setdiff(colnames(out),
+                  c("estimate", "std.error", "p.value", "value"))
+
+  out <- out[matrix(!as.matrix(out[vars]) %in% c(0,1),
+                    ncol=length(vars)) |>
+               rowSums() == length(vars),]
+
+  # now demean and rerun
+  data_dm <- toydata |>
+    transform(X1 = X1 - mean(X1),
+              X2 = X2 - mean(X2),
+              X3 = X3 - mean(X3),
+              X4 = X4 - mean(X4))
+
+  mod_dm <- lm(Y~X1*X2*X3*X4, data_dm)
+  terms <- names(coef(mod_dm))[-1]
+
+  dm_df <- data.frame(vars = names(mod_dm$coefficients),
+                      mod_est = as.vector(round(mod_dm$coefficients, 5)))[-1,]
+
+  out_df <- Rinteract:::callapply("rbind", 1:nrow(out), function(x){
+
+    df <- out[x,]
+
+    term_vars <- vars[df[vars]=="effect"]
+
+    full_term <- terms[Rinteract:::ind_fn(terms, term_vars)]
+
+    data.frame(vars = full_term, out_est = round(df$estimate, 5))
+
+  })
+
+  merge_df <- merge(out_df, dm_df) |>
+    transform(check = out_est==mod_est)
+
+  expect_true(all(merge_df$check))
+
+})
