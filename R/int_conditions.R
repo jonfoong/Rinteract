@@ -16,7 +16,7 @@
 #' set.seed(1)
 #' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE), X3 = sample(0:1, 100, replace=TRUE), FE = rep(1:5, 20))
 #' dat <- dat |> transform(Y = X1 + 2*X2 + 3*X1*X2 + X3 + rnorm(1))
-#' mod <- lm_robust(Y~X1*X2, dat, fixed_effects = ~FE)
+#' mod <- feols(Y~X1*X2|FE, dat)
 #' cond_tab <- int_conditions(mod, data = dat, main_vars = c("X1", "X2"), .names = c(A1 = "X1", A2 = "X2"), fixef = list(FE = factor(1:5)))
 #'
 #' @export
@@ -35,12 +35,12 @@ int_conditions <- function(mod,
 
   # stop if model input not accepted
 
-  if (!any(class(mod) %in% c("lm", "glm", "lm_robust"))) stop("Only lm, lm_robust, and glm models accepted")
+  if (!any(class(mod) %in% c("lm", "glm", "fixest"))) stop("Only lm, fixest, and glm models accepted")
 
   # extract all vars from model
 
   all_vars <-
-    attributes(mod$terms)$term.labels
+    tidy(mod)$term
 
   # if main_vars not specified, extracts highest order interaction
 
@@ -366,7 +366,7 @@ int_conditions <- function(mod,
 
     df_pred <- transform(df_pred, value = "Level")
 
-    df_all <- rbind(cond_effs, df_pred)
+    df_all <- rbind(cond_effs, df_pred, make.row.names = FALSE)
 
   } else df_all <- cond_effs
 
