@@ -22,6 +22,7 @@ Suggests:
     rmarkdown,
     estimatr (>= 0.20.0),
     testthat (>= 3.0.0)
+    fixest (>= 0.11.0)
 VignetteBuilder: knitr
 BugReports: https://github.com/jonfoong/Rinteract/issues
 Config/testthat/edition: 3

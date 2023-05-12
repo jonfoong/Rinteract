@@ -43,7 +43,7 @@ library(fixest)
 set.seed(1)
 dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE), X3 = sample(0:1, 100, replace=TRUE), FE = rep(1:5, 20))
 dat <- dat |> transform(Y = X1 + 2*X2 + 3*X1*X2 + X3 + rnorm(1))
-mod <- lm_robust(Y~X1*X2, dat, fixed_effects = ~FE)
+mod <- feols(Y~X1*X2|FE, dat)
 cond_tab <- int_conditions(mod, data = dat, main_vars = c("X1", "X2"), .names = c(A1 = "X1", A2 = "X2"), fixef = list(FE = factor(1:5)))
 
 }
