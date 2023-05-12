@@ -212,7 +212,7 @@ int_conditions <- function(mod,
 
       grid <- callapply("rbind", 1:nrow(grid), function(x){
 
-        if (nrow(grid)==1) grid_df <- grid else grid_df <- grid[x,]
+        grid_df <- grid[x,, drop = FALSE]
 
         mean_vars <- paste(colnames(grid)[grid_df==0.5], collapse = ",")
 
@@ -233,7 +233,7 @@ int_conditions <- function(mod,
       hyp_tests <-
         callapply("rbind", 1:nrow(hyp_grid), function(x){
 
-          if (nrow(hyp_grid)==1) grid_row <- hyp_grid else grid_row <- hyp_grid[x,]
+          grid_row <- hyp_grid[x,, drop = FALSE]
 
           for (i in colnames(grid_row)) assign(i, grid_row[[i]])
 
@@ -347,14 +347,14 @@ int_conditions <- function(mod,
 
     }
 
-    if(nrow(pred_vars)>0){
+    if(!is.null(pred_vars)){
 
       preds <-
         callapply("rbind", 1:nrow(pred_vars), function(x){
 
-          pred_df <- as.data.frame(pred_vars[x,])
+          pred_df <- pred_vars[x,,drop = FALSE]
 
-          predict(mod, cbind(df_pred, pred_df))
+          predict(mod, merge(df_pred, pred_df))
         })
 
       preds <- apply(preds, 2, mean, na.rm=TRUE)

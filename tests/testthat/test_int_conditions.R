@@ -37,7 +37,9 @@ test_that("argument conmeans = FALSE", {
 # test specifying main vars
 test_that("specify main vars", {
   mod <- lm(Y~X1*X2 + X3*X4, toydata)
-  out <- int_conditions(mod, toydata, main_vars = c("X3", "X4"), .names = c(A1="X3", A2 = "X4"))
+  out <- int_conditions(mod, toydata,
+                        main_vars = c("X3", "X4"),
+                        .names = c(A1="X3", A2 = "X4"))
   expect_true(all(c("A1", "A2") %in% colnames(out)))
 })
 
