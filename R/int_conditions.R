@@ -6,13 +6,13 @@
 #' @param main_vars A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction
 #' @param zero_con By default the function returns conditional effects for the 0, 1, and mean (all) conditions. However you can also specify alternative values other than 0 to replace the zero condition. Must be a list of named integers where name corresponds to a variable name in the model. Variables whose names are not supplied automatically default to 0.
 #' @param .names A named vector for renaming variables
-#' @param pred_vars int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. Defaults to 0 for all non-interaction variables.
+#' @param pred_vars int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. The default behaviour is to average predictions across all possible combinations of these variables.
 #' @param fixef Are there fixed effects within the model? If so these must be supplied in order for predictions to be generated. The argument takes a list of named factors and generates predictions across the mean of all combinations of fixed effects.
 #' @param conmeans Should conditional means be returned? Defaults to `TRUE`.
 #'
 #' @return A data frame object that contains all effects, respective conditions, and estimated hypotheses
 #' @examples
-#' library(estimatr)
+#' library(fixest)
 #' set.seed(1)
 #' dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE), X3 = sample(0:1, 100, replace=TRUE), FE = rep(1:5, 20))
 #' dat <- dat |> transform(Y = X1 + 2*X2 + 3*X1*X2 + X3 + rnorm(1))

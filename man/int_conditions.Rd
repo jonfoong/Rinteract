@@ -26,7 +26,7 @@ int_conditions(
 
 \item{.names}{A named vector for renaming variables}
 
-\item{pred_vars}{int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. Defaults to 0 for all non-interaction variables.}
+\item{pred_vars}{int_conditions cannot return model predictions if there exists other variables beyond the interaction terms that are not supplied. To generate predictions from these models, supply a named dataframe of dimension 1*n, where n is the number of missing variables. Column names must correspond to terms used in model supplied and column values must be a singular numerical value. The default behaviour is to average predictions across all possible combinations of these variables.}
 
 \item{fixef}{Are there fixed effects within the model? If so these must be supplied in order for predictions to be generated. The argument takes a list of named factors and generates predictions across the mean of all combinations of fixed effects.}
 
@@ -39,7 +39,7 @@ A data frame object that contains all effects, respective conditions, and estima
 Conducts hypothesis testing across all conditions of interaction effects of a fitted model
 }
 \examples{
-library(estimatr)
+library(fixest)
 set.seed(1)
 dat <- data.frame(X1 = sample(0:1, 100, replace=TRUE), X2 = sample(0:1, 100, replace=TRUE), X3 = sample(0:1, 100, replace=TRUE), FE = rep(1:5, 20))
 dat <- dat |> transform(Y = X1 + 2*X2 + 3*X1*X2 + X3 + rnorm(1))
