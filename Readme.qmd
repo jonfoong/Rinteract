@@ -106,4 +106,4 @@ int_graph(dat, black+female~log_income+age, digits = 2) +
 
 ---
 
-Note: Technically, `int_conditions` will work for all models that are accepted by `broom::tidy` and `multcomp::glht`.`int_graph` also only takes up to four-way interactions as of yet; for clarity I do not recommended going higher than this. One way to visualise five or higher way interactions is to choose up to four variables to plot, and then keep values for all other variables fixed before feeding into `int_graph`.
+Note: Technically, `int_conditions` will work for all models that are accepted by `multcomp::glht`.`int_graph` also only takes up to four-way interactions as of yet; for clarity I do not recommended going higher than this. One way to visualise five or higher way interactions is to choose up to four variables to plot, and then keep values for all other variables fixed before feeding into `int_graph`.
