@@ -36,7 +36,7 @@ int_conditions(
 A data frame object that contains all effects, respective conditions, and estimated hypotheses
 }
 \description{
-Conducts hypothesis testing across all conditions of interaction effects of a fitted model
+Conducts hypothesis testing across all conditions of interaction effects of a fitted model. Interaction variables must be numeric or at least binary.
 }
 \examples{
 library(fixest)

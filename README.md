@@ -62,8 +62,7 @@ and mean condition for all variables.
 ``` r
 data("RandHIE")
 
-mod <- lm_robust(xghindx~female*black*linc*xage, RandHIE, 
-                 fixed_effects = ~year, se_type = "stata")
+mod <- fixest::feols(xghindx~female*black*linc*xage|year, RandHIE)
 
 dat <- int_conditions(mod, RandHIE,
                       fixef = list(year = factor(unique(RandHIE$year))),
@@ -97,8 +96,8 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:right;"> -7.162 </td>
-   <td style="text-align:right;"> 4.515 </td>
-   <td style="text-align:right;"> 0.113 </td>
+   <td style="text-align:right;"> 0.397 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -107,8 +106,8 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:right;"> -7.528 </td>
-   <td style="text-align:right;"> 3.737 </td>
-   <td style="text-align:right;"> 0.044 </td>
+   <td style="text-align:right;"> 0.422 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -117,8 +116,8 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:right;"> -9.176 </td>
-   <td style="text-align:right;"> 2.793 </td>
-   <td style="text-align:right;"> 0.001 </td>
+   <td style="text-align:right;"> 1.070 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -127,8 +126,8 @@ dat |>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:right;"> -0.893 </td>
-   <td style="text-align:right;"> 0.418 </td>
-   <td style="text-align:right;"> 0.033 </td>
+   <td style="text-align:right;"> 0.140 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -137,8 +136,8 @@ dat |>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:right;"> -6.442 </td>
-   <td style="text-align:right;"> 4.014 </td>
-   <td style="text-align:right;"> 0.108 </td>
+   <td style="text-align:right;"> 0.367 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -147,8 +146,8 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> all </td>
    <td style="text-align:right;"> -6.980 </td>
-   <td style="text-align:right;"> 2.557 </td>
-   <td style="text-align:right;"> 0.006 </td>
+   <td style="text-align:right;"> 0.920 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
 </tbody>
@@ -197,8 +196,8 @@ dat |>
    <td style="text-align:left;"> 8.984 </td>
    <td style="text-align:left;"> 50 </td>
    <td style="text-align:right;"> -0.340 </td>
-   <td style="text-align:right;"> 7.809 </td>
-   <td style="text-align:right;"> 0.965 </td>
+   <td style="text-align:right;"> 1.848 </td>
+   <td style="text-align:right;"> 0.854 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -207,8 +206,8 @@ dat |>
    <td style="text-align:left;"> 8.984 </td>
    <td style="text-align:left;"> 50 </td>
    <td style="text-align:right;"> -0.705 </td>
-   <td style="text-align:right;"> 8.505 </td>
-   <td style="text-align:right;"> 0.934 </td>
+   <td style="text-align:right;"> 2.003 </td>
+   <td style="text-align:right;"> 0.725 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -217,8 +216,8 @@ dat |>
    <td style="text-align:left;"> 8.984 </td>
    <td style="text-align:left;"> 50 </td>
    <td style="text-align:right;"> -2.353 </td>
-   <td style="text-align:right;"> 12.096 </td>
-   <td style="text-align:right;"> 0.846 </td>
+   <td style="text-align:right;"> 2.755 </td>
+   <td style="text-align:right;"> 0.393 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -227,8 +226,8 @@ dat |>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 50 </td>
    <td style="text-align:right;"> -0.538 </td>
-   <td style="text-align:right;"> 7.694 </td>
-   <td style="text-align:right;"> 0.944 </td>
+   <td style="text-align:right;"> 1.846 </td>
+   <td style="text-align:right;"> 0.771 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -237,8 +236,8 @@ dat |>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 50 </td>
    <td style="text-align:right;"> -6.087 </td>
-   <td style="text-align:right;"> 5.029 </td>
-   <td style="text-align:right;"> 0.226 </td>
+   <td style="text-align:right;"> 1.803 </td>
+   <td style="text-align:right;"> 0.001 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -247,8 +246,8 @@ dat |>
    <td style="text-align:left;"> 8.984 </td>
    <td style="text-align:left;"> all </td>
    <td style="text-align:right;"> -0.512 </td>
-   <td style="text-align:right;"> 4.026 </td>
-   <td style="text-align:right;"> 0.899 </td>
+   <td style="text-align:right;"> 0.932 </td>
+   <td style="text-align:right;"> 0.583 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
 </tbody>
@@ -267,9 +266,10 @@ int_graph(dat, black+female~log_income+age, digits = 2) +
 
 ------------------------------------------------------------------------
 
-Note: As of now the package only accepts `lm`, `glm` and `lm_robust`
-models and numeric variables.`int_graph` also only takes up to four-way
-interactions as of yet; for clarity I do not recommended going higher
-than this. One way to visualise five or higher way interactions is to
-choose up to four variables to plot, and then keep values for all other
-variables fixed before feeding into `int_graph`.
+Note: Technically, `int_conditions` will work for all models that are
+accepted by `broom::tidy` and `multcomp::glht`.`int_graph` also only
+takes up to four-way interactions as of yet; for clarity I do not
+recommended going higher than this. One way to visualise five or higher
+way interactions is to choose up to four variables to plot, and then
+keep values for all other variables fixed before feeding into
+`int_graph`.

@@ -1,5 +1,5 @@
 #' @title Generate conditional means and effects from a model with interactions
-#' @description Conducts hypothesis testing across all conditions of interaction effects of a fitted model
+#' @description Conducts hypothesis testing across all conditions of interaction effects of a fitted model. Interaction variables must be numeric or at least binary.
 #'
 #' @param mod A model object
 #' @param data Dataset used when fitting model

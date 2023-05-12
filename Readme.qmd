@@ -20,7 +20,6 @@ knitr::opts_chunk$set(
 library(Rinteract)
 library(kableExtra)
 library(ggplot2)
-library(estimatr)
 library(sampleSelection)
 ```
 
@@ -58,8 +57,7 @@ We use data from the Rand Health Insurance Experiment from the `sampleSelection`
 ```{r}
 data("RandHIE")
 
-mod <- lm_robust(xghindx~female*black*linc*xage, RandHIE, 
-                 fixed_effects = ~year, se_type = "stata")
+mod <- fixest::feols(xghindx~female*black*linc*xage|year, RandHIE)
 
 dat <- int_conditions(mod, RandHIE,
                       fixef = list(year = factor(unique(RandHIE$year))),
@@ -106,7 +104,6 @@ int_graph(dat, black+female~log_income+age, digits = 2) +
 
 ```
 
-
 ---
 
-Note: As of now the package only accepts `lm`, `glm` and `lm_robust` models and numeric variables.`int_graph` also only takes up to four-way interactions as of yet; for clarity I do not recommended going higher than this. One way to visualise five or higher way interactions is to choose up to four variables to plot, and then keep values for all other variables fixed before feeding into `int_graph`.
+Note: Technically, `int_conditions` will work for all models that are accepted by `broom::tidy` and `multcomp::glht`.`int_graph` also only takes up to four-way interactions as of yet; for clarity I do not recommended going higher than this. One way to visualise five or higher way interactions is to choose up to four variables to plot, and then keep values for all other variables fixed before feeding into `int_graph`.
