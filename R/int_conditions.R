@@ -40,7 +40,7 @@ int_conditions <- function(mod,
   # extract all vars from model
 
   all_vars <-
-    tidy(mod)$term
+    tidy(mod)$term[-1]
 
   # if main_vars not specified, extracts highest order interaction
 

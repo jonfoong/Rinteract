@@ -1,6 +1,6 @@
 library(testthat)
 library(Rinteract)
-library(estimatr)
+library(fixest)
 
 
 # test different models
@@ -20,8 +20,8 @@ test_that("glm works", {
 })
 
 
-test_that("lm_robust works", {
-  mod <- lm_robust(Y~X1*X2*X3*X4, toydata)
+test_that("fixest works", {
+  mod <- feols(Y~X1*X2*X3*X4, toydata)
   out <- int_conditions(mod, toydata)
   expect_s3_class(out, "data.frame")
 })
@@ -54,9 +54,9 @@ test_that("specify prediction vars", {
 })
 
 
-# test fixed effects for lm_robust
+# test fixed effects for fixest
 test_that("fixef works", {
-  mod <- lm_robust(Y~X1*X2*X3*X4, toydata, fixed_effects = ~FE)
+  mod <- feols(Y~X1*X2*X3*X4|FE, toydata)
   out <- int_conditions(mod, toydata, fixef = list(FE = factor(1:5)))
   expect_s3_class(out, "data.frame")
 })
