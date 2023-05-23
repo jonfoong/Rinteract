@@ -79,8 +79,8 @@ dat |>
 <table>
  <thead>
   <tr>
-   <th style="text-align:left;"> black </th>
    <th style="text-align:left;"> female </th>
+   <th style="text-align:left;"> black </th>
    <th style="text-align:left;"> log_income </th>
    <th style="text-align:left;"> age </th>
    <th style="text-align:right;"> estimate </th>
@@ -95,9 +95,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> 1.182 </td>
-   <td style="text-align:right;"> 0.341 </td>
-   <td style="text-align:right;"> 0.001 </td>
+   <td style="text-align:right;"> -7.162 </td>
+   <td style="text-align:right;"> 0.397 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -105,9 +105,9 @@ dat |>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> 0.141 </td>
-   <td style="text-align:right;"> 0.525 </td>
-   <td style="text-align:right;"> 0.788 </td>
+   <td style="text-align:right;"> -7.528 </td>
+   <td style="text-align:right;"> 0.422 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -115,9 +115,9 @@ dat |>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -0.832 </td>
-   <td style="text-align:right;"> 0.970 </td>
-   <td style="text-align:right;"> 0.391 </td>
+   <td style="text-align:right;"> -9.176 </td>
+   <td style="text-align:right;"> 1.070 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -125,9 +125,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> -2.659 </td>
-   <td style="text-align:right;"> 0.029 </td>
-   <td style="text-align:right;"> 0.000 </td>
+   <td style="text-align:right;"> -0.893 </td>
+   <td style="text-align:right;"> 0.140 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -135,9 +135,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 0 </td>
-   <td style="text-align:right;"> 0.741 </td>
-   <td style="text-align:right;"> 0.304 </td>
-   <td style="text-align:right;"> 0.015 </td>
+   <td style="text-align:right;"> -6.442 </td>
+   <td style="text-align:right;"> 0.367 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -145,9 +145,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> all </td>
-   <td style="text-align:right;"> 6.056 </td>
-   <td style="text-align:right;"> 0.467 </td>
-   <td style="text-align:right;"> 0.000 </td>
+   <td style="text-align:right;"> -6.980 </td>
+   <td style="text-align:right;"> 0.920 </td>
+   <td style="text-align:right;"> 0 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
 </tbody>
@@ -179,8 +179,8 @@ dat |>
 <table>
  <thead>
   <tr>
-   <th style="text-align:left;"> black </th>
    <th style="text-align:left;"> female </th>
+   <th style="text-align:left;"> black </th>
    <th style="text-align:left;"> log_income </th>
    <th style="text-align:left;"> age </th>
    <th style="text-align:right;"> estimate </th>
@@ -195,9 +195,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 8.984 </td>
    <td style="text-align:left;"> 50 </td>
-   <td style="text-align:right;"> 6.694 </td>
-   <td style="text-align:right;"> 0.529 </td>
-   <td style="text-align:right;"> 0.000 </td>
+   <td style="text-align:right;"> -0.340 </td>
+   <td style="text-align:right;"> 1.848 </td>
+   <td style="text-align:right;"> 0.854 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -205,9 +205,9 @@ dat |>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 8.984 </td>
    <td style="text-align:left;"> 50 </td>
-   <td style="text-align:right;"> 5.652 </td>
-   <td style="text-align:right;"> 1.010 </td>
-   <td style="text-align:right;"> 0.000 </td>
+   <td style="text-align:right;"> -0.705 </td>
+   <td style="text-align:right;"> 2.003 </td>
+   <td style="text-align:right;"> 0.725 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -215,9 +215,9 @@ dat |>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 8.984 </td>
    <td style="text-align:left;"> 50 </td>
-   <td style="text-align:right;"> 4.680 </td>
-   <td style="text-align:right;"> 1.493 </td>
-   <td style="text-align:right;"> 0.002 </td>
+   <td style="text-align:right;"> -2.353 </td>
+   <td style="text-align:right;"> 2.755 </td>
+   <td style="text-align:right;"> 0.393 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -225,9 +225,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> all </td>
    <td style="text-align:left;"> 50 </td>
-   <td style="text-align:right;"> 6.815 </td>
-   <td style="text-align:right;"> 0.531 </td>
-   <td style="text-align:right;"> 0.000 </td>
+   <td style="text-align:right;"> -0.538 </td>
+   <td style="text-align:right;"> 1.846 </td>
+   <td style="text-align:right;"> 0.771 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -235,9 +235,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 1 </td>
    <td style="text-align:left;"> 50 </td>
-   <td style="text-align:right;"> 10.215 </td>
-   <td style="text-align:right;"> 0.641 </td>
-   <td style="text-align:right;"> 0.000 </td>
+   <td style="text-align:right;"> -6.087 </td>
+   <td style="text-align:right;"> 1.803 </td>
+   <td style="text-align:right;"> 0.001 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
   <tr>
@@ -245,9 +245,9 @@ dat |>
    <td style="text-align:left;"> 0 </td>
    <td style="text-align:left;"> 8.984 </td>
    <td style="text-align:left;"> all </td>
-   <td style="text-align:right;"> 2.093 </td>
-   <td style="text-align:right;"> 0.283 </td>
-   <td style="text-align:right;"> 0.000 </td>
+   <td style="text-align:right;"> -0.512 </td>
+   <td style="text-align:right;"> 0.932 </td>
+   <td style="text-align:right;"> 0.583 </td>
    <td style="text-align:left;"> Causal effect </td>
   </tr>
 </tbody>

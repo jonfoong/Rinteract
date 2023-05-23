@@ -30,7 +30,7 @@ int_conditions(
 
 \item{fixef}{Are there fixed effects within the model? If so these must be supplied in order for predictions to be generated. The argument takes a list of named factors and generates predictions across the mean of all combinations of fixed effects.}
 
-\item{conmeans}{Should conditional means be returned? Defaults to `TRUE`.}
+\item{conmeans}{Should conditional means be returned? Defaults to TRUE.}
 }
 \value{
 A data frame object that contains all effects, respective conditions, and estimated hypotheses
