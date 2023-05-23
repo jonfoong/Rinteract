@@ -311,7 +311,7 @@ int_conditions <- function(mod,
 
     colnames(all_pred) <- main_vars
 
-    # maybe write fn for this?
+    # change all base values to conditions specified
 
     for (i in main_vars) all_pred[all_pred[,i]=="base",i] <- zero_con[i]
 
