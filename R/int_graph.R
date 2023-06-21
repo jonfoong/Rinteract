@@ -5,12 +5,13 @@
 #' @param facet A formula of the form X~Y with all interaction terms specified. Must be supplied.
 #' @param digits How many decimal digits should be displayed?
 #' @param width Maximum number of characters before wrapping the strip.
-#' @param col_effect Colour of background panel for each effect type. The default colors are taken from `RColorBrewer`'s Pastel1 palette. Length of vector must be either 1 (in which case all faceted effects have the same color) or n, where n is the number of faceted variables in the dataset.
+#' @param col_effect Colour of background panel for each effect type. The default colors are taken from `RColorBrewer`'s Pastel1 palette. Length of vector must be either 1 (in which case all faceted effects have the same color) or n, where n is the number of faceted variables in the dataset. By default, all positive values are black and negative ones red.
 #' @param col_level Colour of background panel for all levels.
 #' @param col_label Background colour of label strip.
 #' @param eff_var Which variable should the color for the effect panel be faceted on? Defaults to the variable used for the outer facet.
 #' @param alpha_e The alpha level for the effect panels. Defaults to 1.
 #' @param alpha_l The alpha level for the level panels. Defaults to 1.
+#' @param col_values What colour should values take? Takes a vector up to length 2 for positive and negative values, or length one, in which case all values have the same colour.
 #'
 #' @return A ggplot object that plots all conditional means and effects from the output of `int_conditions`. Values in red are negative estimates while bold represents estimates with p<0.05.
 #' @examples
@@ -45,7 +46,8 @@ int_graph <-
            col_label = "#DEEBF7",
            eff_var = NULL,
            alpha_e = 1,
-           alpha_l = 1
+           alpha_l = 1,
+           col_values = c("black", "red")
   ){
 
     if(is.null(facet)) stop("facet argument cannot be empty!")
@@ -77,6 +79,10 @@ int_graph <-
       setdiff(eff_var_vals, names_col_effect)
 
     names(col_effect) <- names_col_effect
+
+    if (length(col_values)==1) col_values <- rep(col_values, 2)
+
+    names(col_values) <- c("pos", "neg")
 
 
     # first round digits
@@ -139,6 +145,6 @@ int_graph <-
       # now add colors for signs and significance
       geom_text(aes(color = sign,
                     fontface = ifelse(sig, 2, 1))) +
-      scale_color_manual(values = c("pos" = "black", "neg" = "red"))
+      scale_color_manual(values = col_values)
 
   }

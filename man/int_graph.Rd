@@ -14,7 +14,8 @@ int_graph(
   col_label = "#DEEBF7",
   eff_var = NULL,
   alpha_e = 1,
-  alpha_l = 1
+  alpha_l = 1,
+  col_values = c("black", "red")
 )
 }
 \arguments{
@@ -26,7 +27,7 @@ int_graph(
 
 \item{width}{Maximum number of characters before wrapping the strip.}
 
-\item{col_effect}{Colour of background panel for each effect type. The default colors are taken from `RColorBrewer`'s Pastel1 palette. Length of vector must be either 1 (in which case all faceted effects have the same color) or n, where n is the number of faceted variables in the dataset.}
+\item{col_effect}{Colour of background panel for each effect type. The default colors are taken from `RColorBrewer`'s Pastel1 palette. Length of vector must be either 1 (in which case all faceted effects have the same color) or n, where n is the number of faceted variables in the dataset. By default, all positive values are black and negative ones red.}
 
 \item{col_level}{Colour of background panel for all levels.}
 
@@ -37,6 +38,8 @@ int_graph(
 \item{alpha_e}{The alpha level for the effect panels. Defaults to 1.}
 
 \item{alpha_l}{The alpha level for the level panels. Defaults to 1.}
+
+\item{col_values}{What colour should values take? Takes a vector up to length 2 for positive and negative values, or length one, in which case all values have the same colour.}
 }
 \value{
 A ggplot object that plots all conditional means and effects from the output of `int_conditions`. Values in red are negative estimates while bold represents estimates with p<0.05.
