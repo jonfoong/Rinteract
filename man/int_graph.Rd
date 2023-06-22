@@ -15,7 +15,9 @@ int_graph(
   eff_var = NULL,
   alpha_e = 1,
   alpha_l = 1,
-  col_values = c("black", "red")
+  col_values = c("black", "red"),
+  lab_fun = NULL,
+  label_vals = NULL
 )
 }
 \arguments{
@@ -40,6 +42,10 @@ int_graph(
 \item{alpha_l}{The alpha level for the level panels. Defaults to 1.}
 
 \item{col_values}{What colour should values take? Takes a vector up to length 2 for positive and negative values, or length one, in which case all values have the same colour.}
+
+\item{lab_fun}{By default, `int_graph` shows both names and values of labels. Alternatively, a labeller function can also be supplied that takes one data frame of labels and returns a list or data frame of character vectors.}
+
+\item{label_vals}{By default, `int_graph` takes label values supplied from the output of `int_conditions`. To change these values, supply a list of named vectors.}
 }
 \value{
 A ggplot object that plots all conditional means and effects from the output of `int_conditions`. Values in red are negative estimates while bold represents estimates with p<0.05.

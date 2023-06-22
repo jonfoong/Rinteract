@@ -12,6 +12,8 @@
 #' @param alpha_e The alpha level for the effect panels. Defaults to 1.
 #' @param alpha_l The alpha level for the level panels. Defaults to 1.
 #' @param col_values What colour should values take? Takes a vector up to length 2 for positive and negative values, or length one, in which case all values have the same colour.
+#' @param lab_fun By default, `int_graph` shows both names and values of labels. Alternatively, a labeller function can also be supplied that takes one data frame of labels and returns a list or data frame of character vectors.
+#' @param label_vals By default, `int_graph` takes label values supplied from the output of `int_conditions`. To change these values, supply a list of named vectors.
 #'
 #' @return A ggplot object that plots all conditional means and effects from the output of `int_conditions`. Values in red are negative estimates while bold represents estimates with p<0.05.
 #' @examples
@@ -30,6 +32,7 @@
 #' @export
 #' @importFrom ggplot2 ggplot theme_void theme element_rect element_text margin rel aes geom_rect scale_fill_manual geom_text scale_color_manual
 #' @importFrom ggh4x facet_nested
+#' @importFrom stringr str_replace_all
 
 
 
@@ -47,7 +50,9 @@ int_graph <-
            eff_var = NULL,
            alpha_e = 1,
            alpha_l = 1,
-           col_values = c("black", "red")
+           col_values = c("black", "red"),
+           lab_fun = NULL,
+           label_vals = NULL
   ){
 
     if(is.null(facet)) stop("facet argument cannot be empty!")
@@ -84,11 +89,23 @@ int_graph <-
 
     names(col_values) <- c("pos", "neg")
 
+    # change value names
+
+    if(!is.null(label_vals)){
+
+      for (i in names(label_vals)){
+
+        data[[i]] <-
+          str_replace_all(data[[i]],
+                          setNames(label_vals[[i]], names(label_vals[[i]])))
+      }
+
+    }
 
     # first round digits
 
-    data[,c("estimate", "std.error", "p.value")] <-
-      apply(data[,c("estimate", "std.error", "p.value")], 2, function(x) round(x, digits))
+    data[, c("estimate", "std.error", "p.value")] <-
+      apply(data[, c("estimate", "std.error", "p.value")], 2, function(x) round(x, digits))
 
     # add some vars for plotting later
 
@@ -106,20 +123,27 @@ int_graph <-
     for (i in vars){
       vals <- data[,i]
 
+      if (!is.null(label_vals)){
+        var_levels <- label_vals[[i]]
+      } else {
       var_levels <- c(setdiff(unique(vals), names_col_effect[-1]),
                       names_col_effect[-1])
+      }
 
       data[,i] <- factor(vals, levels = var_levels)
 
     }
 
+    # determine labeller function
+
+    if(is.null(lab_fun)) lab_fun <- label_wrap_gen_both(width)
 
     # Now set the background
 
     p <-
       ggplot(data, aes(x, y, label = label)) +
       facet_nested(facet,
-                   labeller = label_wrap_gen_both(width),
+                   labeller = lab_fun,
                    switch = "y") +
       theme_void() +
       theme(legend.position = "none",
@@ -146,5 +170,7 @@ int_graph <-
       geom_text(aes(color = sign,
                     fontface = ifelse(sig, 2, 1))) +
       scale_color_manual(values = col_values)
+
+    p
 
   }
