@@ -95,7 +95,7 @@ dat |>
 We can also visualize these effects using a graph. `int_graph` returns a tabular ggplot object that displays all conditional effects and model predictions and can be further manipulated. Highlighted cells correspond to effect estimates and standard errors and the rest are model predictions. Values in bold correspond to estimates with p-values <0.05.
 
 ```{r}
-#| fig.width: 10
+#| fig.width: 12
 #| fig.height: 3
 
 dat |>
@@ -108,7 +108,7 @@ dat |>
 For scientific publications, we can change the color scheme using a few simple arguments since the output is a ggplot object.
 
 ```{r}
-#| fig.width: 10
+#| fig.width: 12
 #| fig.height: 3
 
 dat |>
