@@ -22,7 +22,7 @@ int_conditions(
 
 \item{main_vars}{A vector of variable names in the interaction of interest. If unspecified, takes by default variables from the highest order interaction}
 
-\item{zero_con}{By default the function returns conditional effects for the 0, 1, and mean (all) conditions. However you can also specify alternative values other than 0 to replace the zero condition. Must be a list of named integers where name corresponds to a variable name in the model. Variables whose names are not supplied automatically default to 0.}
+\item{zero_con}{By default the function returns conditional effects for the 0, 1, and mean (all) conditions. However you can also specify alternative values other than 0 to replace the zero condition. Must be a named vector where names corresponds to variable names in the model. Variables whose names are not supplied automatically default to 0.}
 
 \item{.names}{A named vector for renaming variables}
 
