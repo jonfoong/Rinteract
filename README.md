@@ -88,8 +88,7 @@ dat |>
 From the first row we see that the effect of being a woman, condition on
 income and age at zero, is -8.819. Obviously these conditions are of
 little analytical value. While `int_conditions` also returns mean
-conditions, we can also specify specific values for our variables to
-take.
+conditions, we can also specify values for our variables to take.
 
 ``` r
 

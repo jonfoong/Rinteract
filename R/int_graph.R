@@ -69,7 +69,6 @@ int_graph <-
     # if not specified, it is by default the outer facet(s)
 
     if(is.null(eff_var)) eff_var <- c(rhs, lhs)[grepl("\\+", facet_char)][1]
-    if(length(eff_var)==0) eff_var <- vars[1]
 
     # now set colours
 

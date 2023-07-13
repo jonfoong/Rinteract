@@ -61,6 +61,21 @@ test_that("fixef works", {
   expect_s3_class(out, "data.frame")
 })
 
+test_that("setting non zero condition using zero_con flag works", {
+  mod <- feols(Y~X1*X2*X3*X4, toydata)
+  out <- int_conditions(mod, toydata, zero_con = c(X1 = 50,
+                                                   X2 = 30))
+  expect_s3_class(out, "data.frame")
+})
+
+
+test_that("supplying non factors for fixed effects fail", {
+  mod <- feols(Y~X1*X2*X3*X4|FE, toydata)
+  expect_error(int_conditions(mod, toydata, fixef = list(FE = 1:5)),
+               "Please supply fixed effects as factors!")
+})
+
+
 # test that all estimates are correct - testing against manual calculation
 # make sure manual calculation is correct!!
 
