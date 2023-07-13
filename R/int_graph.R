@@ -12,8 +12,8 @@
 #' @param alpha_e The alpha level for the effect panels. Defaults to 1.
 #' @param alpha_l The alpha level for the level panels. Defaults to 1.
 #' @param col_values What colour should values take? Takes a vector up to length 2 for positive and negative values, or length one, in which case all values have the same colour.
-#' @param lab_fun By default, `int_graph` shows both names and values of labels. Alternatively, a labeller function can also be supplied that takes one data frame of labels and returns a list or data frame of character vectors.
 #' @param label_vals By default, `int_graph` takes label values supplied from the output of `int_conditions`. To change these values, supply a list of named vectors.
+#' @param lab_both Logical. Should `int_graph` show both names and values of labels?
 #'
 #' @return A ggplot object that plots all conditional means and effects from the output of `int_conditions`. Values in red are negative estimates while bold represents estimates with p<0.05.
 #' @examples
@@ -30,11 +30,8 @@
 #' plot + ggtitle("testing")
 #'
 #' @export
-#' @importFrom ggplot2 ggplot theme_void theme element_rect element_text margin rel aes geom_rect scale_fill_manual geom_text scale_color_manual
+#' @importFrom ggplot2 ggplot theme_void theme element_rect element_text margin rel aes geom_rect scale_fill_manual geom_text scale_color_manual label_wrap_gen
 #' @importFrom ggh4x facet_nested
-#' @importFrom stringr str_replace_all
-
-
 
 int_graph <-
   function(data, # a data frame of the form returned by Rinteract::int_conditions
@@ -51,8 +48,8 @@ int_graph <-
            alpha_e = 1,
            alpha_l = 1,
            col_values = c("black", "red"),
-           lab_fun = NULL,
-           label_vals = NULL
+           label_vals = NULL,
+           lab_both = TRUE
   ){
 
     if(is.null(facet)) stop("facet argument cannot be empty!")
@@ -95,11 +92,13 @@ int_graph <-
 
       for (i in names(label_vals)){
 
-        data[[i]] <-
-          str_replace_all(data[[i]],
-                          setNames(label_vals[[i]], names(label_vals[[i]])))
-      }
+        replacement_vector <-
+          setNames(label_vals[[i]], names(label_vals[[i]]))
 
+        indices <- match(data[[i]], names(replacement_vector))
+
+        data[[i]] <- replacement_vector[indices]
+      }
     }
 
     # first round digits
@@ -136,7 +135,7 @@ int_graph <-
 
     # determine labeller function
 
-    if(is.null(lab_fun)) lab_fun <- label_wrap_gen_both(width)
+    if(lab_both) lab_fun <- label_wrap_gen_both(width) else lab_fun <- label_wrap_gen(width)
 
     # Now set the background
 

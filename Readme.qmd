@@ -46,33 +46,33 @@ Demeaning variables before estimation partly resolves this issue. However, we ma
 $$Y = \alpha + \beta * Treat + \gamma * Female + \delta * Treat * Female+\epsilon$$
 
 
-The estimated parameter $\hat{\delta}$ gives us the difference in treatment effect between male and female patients. However, we are also interested in the treatment effect conditioning on being a female patient, which is given by $\hat{\beta} + \hat{\delta}$. While this simple arithmetic can be performed by looking at a regression table, uncertainty estimates are not so easily obtained. 
+The estimated parameter $\hat{\delta}$ gives us the difference in treatment effect between male and female patients. However, we are also interested in the treatment effect conditioning on being a female patient, which is given by $\hat{\beta} + \hat{\delta}$. While this simple arithmetic can be performed by looking at a regression table, standard errors are not so easily obtained. 
 
 `Rinteract` facilitates this by computing all conditional effects in a model with interactions. It accepts a model object as input and relies on `multcomp` to perform hypothesis testing on all conditions of interest. It also provides functionality for graphing these effects via tabular ggplots that can be further manipulated. 
 
 ## Usage
 
-We use data from the Rand Health Insurance Experiment from the `sampleSelection` package to illustrate an example. By default, int_conditions takes a fitted model and returns all effects in the 0, 1, and mean condition for all variables. 
+We use data from the Rand Health Insurance Experiment from the `sampleSelection` package to illustrate an example. By default, `int_conditions` takes a fitted model and returns all effects and model predictions in the 0, 1, and mean condition for all variables. 
 
 ```{r}
 data("RandHIE")
 
-mod <- fixest::feols(xghindx~female*black*linc*xage|year, RandHIE)
+mod <- fixest::feols(xghindx~female*linc*xage|year, RandHIE)
 
 dat <- int_conditions(mod, RandHIE,
                       fixef = list(year = factor(unique(RandHIE$year))),
                       .names = c(female = "female",
-                                 black = "black",
                                  log_income = "linc",
                                  age = "xage"))
 
 dat |> 
-  head() |>
+  head(3) |>
+  rbind(dat |> tail(3)) |>
   kable(digits = 3)
 
 ```
 
-From the first row we see that the effect of being a non-black woman, condition on income and age at zero, is -7.16. Obviously these conditions are of little analytical value. While `int_conditions` also returns mean conditions, we can also specify specific values for our variables to take. 
+From the first row we see that the effect of being a woman, condition on income and age at zero, is -8.819. Obviously these conditions are of little analytical value. While `int_conditions` also returns mean conditions, we can also specify specific values for our variables to take. 
 
 ```{r}
 
@@ -83,7 +83,6 @@ dat <- int_conditions(mod, RandHIE,
                                    linc = median_inc),
                       fixef = list(year = factor(unique(RandHIE$year))),
                       .names = c(female = "female",
-                                 black = "black",
                                  log_income = "linc",
                                  age = "xage"))
 dat |> 
@@ -93,16 +92,40 @@ dat |>
 ```
 
 
-We can also visualize these effects using a graph. `int_graph` returns a tabular ggplot object that can be further manipulated. Values in bold correspond to estimates with p-values <0.05.
+We can also visualize these effects using a graph. `int_graph` returns a tabular ggplot object that displays all conditional effects and model predictions and can be further manipulated. Highlighted cells correspond to effect estimates and standard errors and the rest are model predictions. Values in bold correspond to estimates with p-values <0.05.
 
 ```{r}
 #| fig.width: 10
-#| fig.height: 10
+#| fig.height: 3
 
-int_graph(dat, black+female~log_income+age, digits = 2) +
-  ggtitle("All conditional means and effects from a four-way interaction")
+dat |>
+  mutate(log_income = ifelse(log_income==median_inc,
+         "median", log_income)) |>
+  int_graph(female~log_income+age, digits = 2) +
+  ggtitle("All conditional means and effects from a three-way interaction")
 
 ```
+For scientific publications, we can change the color scheme using a few simple arguments since the output is a ggplot object.
+
+```{r}
+#| fig.width: 10
+#| fig.height: 3
+
+dat |>
+  mutate(log_income = ifelse(log_income==median_inc,
+         "median", log_income)) |>
+  int_graph(female~log_income+age, 
+            digits = 2,
+            eff_var = "log_income",
+            col_level = "white",
+            col_label = "gray80",
+            col_values = "black") +
+  ggtitle("All conditional means and effects from a three-way interaction") +
+  scale_fill_grey(start = 0.9, end = 0.5)
+
+
+```
+
 
 ---
 
