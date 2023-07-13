@@ -99,7 +99,7 @@ We can also visualize these effects using a graph. `int_graph` returns a tabular
 #| fig.height: 3
 
 dat |>
-  mutate(log_income = ifelse(log_income==median_inc,
+  transform(log_income = ifelse(log_income==median_inc,
          "median", log_income)) |>
   int_graph(female~log_income+age, digits = 2) +
   ggtitle("All conditional means and effects from a three-way interaction")
@@ -112,7 +112,7 @@ For scientific publications, we can change the color scheme using a few simple a
 #| fig.height: 3
 
 dat |>
-  mutate(log_income = ifelse(log_income==median_inc,
+  transform(log_income = ifelse(log_income==median_inc,
          "median", log_income)) |>
   int_graph(female~log_income+age, 
             digits = 2,
