@@ -1,5 +1,5 @@
 
-# Rinteract <img src='hex_sticker/sticker.png' align="right" height="139" />
+# Rinteract <img src='man/figures/hex_sticker/sticker.png' style="float:right; height:200px;"/>
 
 [![R-CMD-check](https://github.com/jonfoong/Rinteract/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jonfoong/Rinteract/actions/workflows/R-CMD-check.yaml)[![codecov](https://codecov.io/github/jonfoong/Rinteract/branch/main/graph/badge.svg?token=2SOK4T1220)](https://codecov.io/github/jonfoong/Rinteract)[![CRAN
 status](https://www.r-pkg.org/badges/version/Rinteract.png)](https://CRAN.R-project.org/package=Rinteract)[![License:
@@ -130,7 +130,7 @@ dat |>
   ggtitle("All conditional means and effects from a three-way interaction")
 ```
 
-![](vignettes/vignette-unnamed-chunk-4-1.png)
+![](man/figures/vignette-unnamed-chunk-4-1.png)
 
 For scientific publications, we can change the color scheme using a few
 simple arguments since the output is a ggplot object.
@@ -149,7 +149,7 @@ dat |>
   scale_fill_grey(start = 0.9, end = 0.5)
 ```
 
-![](vignettes/vignette-unnamed-chunk-5-1.png)
+![](man/figures/vignette-unnamed-chunk-5-1.png)
 
 ------------------------------------------------------------------------
 
