@@ -13,7 +13,7 @@ sticker(
   p_y = 1,
   p_color = 'black',
   p_family = "neville",
-  p_size = 24,
+  p_size = 35,
   s_width = 2.03,
   s_height = 2.03,
   s_x = 1,
