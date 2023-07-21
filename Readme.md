@@ -1,5 +1,5 @@
 
-# Rinteract <img src='man/figures/hex_sticker/sticker.png' style="float:right; height:200px;"/>
+# Rinteract <img src='man/figures/sticker.png' style="float:right; height:200px;"/>
 
 [![R-CMD-check](https://github.com/jonfoong/Rinteract/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/jonfoong/Rinteract/actions/workflows/R-CMD-check.yaml)[![codecov](https://codecov.io/github/jonfoong/Rinteract/branch/main/graph/badge.svg?token=2SOK4T1220)](https://codecov.io/github/jonfoong/Rinteract)[![CRAN
 status](https://www.r-pkg.org/badges/version/Rinteract.png)](https://CRAN.R-project.org/package=Rinteract)[![License:
