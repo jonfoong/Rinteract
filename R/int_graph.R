@@ -98,6 +98,11 @@ int_graph <-
 
         data[[i]] <- replacement_vector[indices]
       }
+
+      # change col effect names
+
+      col_effect <- setNames(col_effect, label_vals[[eff_var]])
+
     }
 
     # first round digits

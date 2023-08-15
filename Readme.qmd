@@ -101,7 +101,10 @@ We can also visualize these effects using a graph. `int_graph` returns a tabular
 dat |>
   transform(log_income = ifelse(log_income==median_inc,
          "median", log_income)) |>
-  int_graph(female~log_income+age, digits = 2) +
+  int_graph(female~log_income+age, digits = 2,
+            label_vals = list(log_income = c(`8.984` = 0, `1` = "log income", "all" = "average", "effect" = "income effect"),
+                              age = c(`50` = "50 years old", `1` = "age", "all" = "average", "effect" = "age effect"),
+                              female = c(`0` = "male", `1` = "female", "all" = "average", "effect" = "female effect"))) +
   ggtitle("All conditional means and effects from a three-way interaction")
 
 ```
