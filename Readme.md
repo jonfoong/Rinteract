@@ -16,38 +16,8 @@ devtools::install_github("jonfoong/Rinteract")
 
 ## Overview
 
-Interaction terms are widely used in regression models to uncover
-underlying heterogeneity. Despite its ubiquity, the interpretation of
-interaction models is often confusing at best and inaccurate at worst.
-In addition, studies typically only report estimates from a model output
-and neglect their conditional effects. As noted in Brambor et al (2006):
-
-> …the typical results table often conveys very little information of
-> interest because the analyst is not concerned with model parameters
-> per se; he or she is primarily interested in the marginal effect of X
-> on Y for substantively meaningful values of the conditioning variable
-> Z. While it is often possible to calculate the marginal effect of X
-> for any value of Z from the typical results table using a little
-> algebra, the problem is that it is not possible to do the same for the
-> standard errors.
-
-Demeaning variables before estimation partly resolves this issue.
-However, we may also be interested in effect sizes for specific
-conditions beyond just the mean. Consider a hypothetical drug treatment
-for which we are also interested in heterogeneity across genders. We
-estimate a simple model:
-
-$$Y = \alpha + \beta * Treat + \gamma * Female + \delta * Treat * Female+\epsilon$$
-
-The estimated parameter $\hat{\delta}$ gives us the difference in
-treatment effect between male and female patients. However, we are also
-interested in the treatment effect conditioning on being a female
-patient, which is given by $\hat{\beta} + \hat{\delta}$. While this
-simple arithmetic can be performed by looking at a regression table,
-standard errors are not so easily obtained.
-
-`Rinteract` facilitates this by computing all conditional effects in a
-model with interactions. It accepts a model object as input and relies
+`Rinteract` aids interpretation of interaction effects by computing all conditional effects in a
+model with interactions (see Brambor et al (2006)). It accepts a model object as input and relies
 on `multcomp` to perform hypothesis testing on all conditions of
 interest. It also provides functionality for graphing these effects via
 tabular ggplots that can be further manipulated.
@@ -85,9 +55,7 @@ dat |>
 | 63  | 1      | all        | all |   72.551 |        NA |      NA | Level         |
 | 64  | all    | all        | all |   73.251 |        NA |      NA | Level         |
 
-From the first row we see that the effect of being a woman, condition on
-income and age at zero, is -8.819. Obviously these conditions are of
-little analytical value. While `int_conditions` also returns mean
+While `int_conditions` also returns mean
 conditions, we can also specify values for our variables to take.
 
 ``` r
@@ -156,6 +124,4 @@ dat |>
 Note: Technically, `int_conditions` will work for all models that are
 accepted by `multcomp::glht`.`int_graph` also only takes up to four-way
 interactions as of yet; for clarity I do not recommended going higher
-than this. One way to visualise five or higher way interactions is to
-choose up to four variables to plot, and then keep values for all other
-variables fixed before feeding into `int_graph`.
+than this.
